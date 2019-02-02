@@ -30,7 +30,7 @@ class ColorItem extends StatelessWidget {
       onTap: handleTapItem,
       child: Container(
         color: nipponColor.color,
-        padding: EdgeInsets.symmetric(vertical: 16),
+        padding: EdgeInsets.symmetric(vertical: 20),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: <Widget>[

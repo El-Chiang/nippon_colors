@@ -28,11 +28,14 @@ class _ColorNameState extends State<ColorNameContainer> {
         Text(
           cname,
           style: textStyle.copyWith(
-            fontSize: 36,
-            fontFamily: 'Mincho',
-          ),
+              fontSize: 36, fontFamily: 'Mincho', fontWeight: FontWeight.w200),
         ),
-        Text(name, style: textStyle.copyWith(fontSize: 14)),
+        SizedBox(height: 10),
+        Text(name,
+            style: textStyle.copyWith(
+              fontSize: 18,
+              fontWeight: FontWeight.w200,
+            )),
       ],
     );
   }

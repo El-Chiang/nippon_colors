@@ -40,12 +40,14 @@ class _HomePageState extends State<HomePage> {
 
   void initState() {
     super.initState();
-    setState(() {
-      colors = allColors;
-      colorCount = allColors.length;
-      colorIndex = Random().nextInt(colorCount - 1); // 随机产生一个颜色编号
-      nipponColor = NipponColor.fromMap(colors[colorIndex]); // 实例化NipponColor
-    });
+    if (this.mounted) {
+      setState(() {
+        colors = allColors;
+        colorCount = allColors.length;
+        colorIndex = Random().nextInt(colorCount - 1); // 随机产生一个颜色编号
+        nipponColor = NipponColor.fromMap(colors[colorIndex]); // 实例化NipponColor
+      });
+    }
     eventBus.on<UpdateColorEvent>().listen((UpdateColorEvent data) {
       if (this.mounted) {
         setState(() {
@@ -80,6 +82,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
+    final double divideH = screenSize.width * 0.012;
     return GestureDetector(
       onTap: _handleTapScreen,
       child: Scaffold(
@@ -102,15 +105,18 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  RGBCircularChart(nipponColor),
-                  CMYKCircularChart(nipponColor),
+                  RGBCircularChart(nipponColor), // RGB环状图
+                  SizedBox(height: divideH),
+                  CMYKCircularChart(nipponColor), // CMYK环状图
                   Container(
+                    // Hex值
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                     child: Text(
                       '#${nipponColor.hex}',
                       style: TextStyle(
                         color: createColorStyle(nipponColor.isLight()),
                         fontSize: 16,
+                        fontWeight: FontWeight.w300,
                       ),
                     ),
                   ),
@@ -148,7 +154,7 @@ class _ValueChartState extends State<ValueChart> {
     super.initState();
     eventBus.on<UpdateColorEvent>().listen((UpdateColorEvent data) {
       NipponColor color = data.updatedColor;
-      setState(() => isLight = color.isLight());
+      if (this.mounted) setState(() => isLight = color.isLight());
       List rgb = color.getRGB();
       List cmyk = color.getCMYK();
       double v1, v2;
@@ -193,9 +199,8 @@ class _ValueChartState extends State<ValueChart> {
           ],
         ),
       ];
-      setState(() {
-        _chartKey.currentState.updateData(nextData);
-      });
+      if (this.mounted)
+        setState(() => _chartKey.currentState.updateData(nextData));
     });
   }
 
@@ -231,6 +236,7 @@ class _ValueChartState extends State<ValueChart> {
           labelStyle: TextStyle(
             fontSize: widget.chartSize.width * 0.5,
             color: createColorStyle(isLight), // 动态创建黑白字体颜色
+            fontWeight: FontWeight.w300,
           ),
           key: _chartKey,
           size: widget.chartSize,
@@ -239,10 +245,15 @@ class _ValueChartState extends State<ValueChart> {
           edgeStyle: SegmentEdgeStyle.round,
           percentageValues: true,
         ),
+        SizedBox(width: widget.chartSize.width * 0.1),
         Text(
           // 显示数值
           widget.value.toString(),
-          style: TextStyle(color: createColorStyle(isLight)),
+          style: TextStyle(
+            color: createColorStyle(isLight),
+            fontSize: widget.chartSize.width * 0.3,
+            fontWeight: FontWeight.w300,
+          ),
         ),
       ],
     );
@@ -264,9 +275,10 @@ class _RGBCircularState extends State<RGBCircularChart> {
 
   @override
   Widget build(BuildContext context) {
-    // 设置环形图大小为屏幕宽度的1/5
+    // 设置环形图大小为屏幕宽度的0.12
     final screenWidth = MediaQuery.of(context).size.width;
-    final chartSize = Size(screenWidth / 8, screenWidth / 8);
+    final chartSize = Size(screenWidth * 0.12, screenWidth * 0.12);
+    final double divideH = chartSize.width * 0.1;
 
     rgb = widget.color.getRGB();
     isLight = widget.color.isLight();
@@ -275,7 +287,7 @@ class _RGBCircularState extends State<RGBCircularChart> {
       children: <Widget>[
         // 竖线
         Container(
-          height: chartSize.height * 2.8,
+          height: chartSize.height * 3,
           width: 1.0,
           color: createColorStyle(isLight),
           margin: const EdgeInsets.only(left: 10.0, right: 8.0),
@@ -291,12 +303,14 @@ class _RGBCircularState extends State<RGBCircularChart> {
                 chartSize: chartSize,
                 isLight: isLight,
               ),
+              SizedBox(height: divideH),
               ValueChart(
                 label: 'G',
                 value: rgb[1],
                 chartSize: chartSize,
                 isLight: isLight,
               ),
+              SizedBox(height: divideH),
               ValueChart(
                 label: 'B',
                 value: rgb[2],
@@ -326,9 +340,10 @@ class _CMYKCircularState extends State<CMYKCircularChart> {
 
   @override
   Widget build(BuildContext context) {
-    // 设置环形图大小为屏幕宽度的1/5
+    // 设置环形图大小为屏幕宽度的0.12
     final screenWidth = MediaQuery.of(context).size.width;
-    final chartSize = Size(screenWidth / 8, screenWidth / 8);
+    final chartSize = Size(screenWidth * 0.12, screenWidth * 0.12);
+    final double divideH = chartSize.width * 0.1;
 
     cmyk = widget.color.getCMYK();
     isLight = widget.color.isLight();
@@ -337,7 +352,7 @@ class _CMYKCircularState extends State<CMYKCircularChart> {
       children: <Widget>[
         // 竖线
         Container(
-          height: chartSize.height * 3.5,
+          height: chartSize.height * 4,
           width: 1.0,
           color: createColorStyle(isLight),
           margin: const EdgeInsets.only(left: 10.0, right: 8.0),
@@ -353,18 +368,21 @@ class _CMYKCircularState extends State<CMYKCircularChart> {
                 chartSize: chartSize,
                 isLight: isLight,
               ),
+              SizedBox(height: divideH),
               ValueChart(
                 label: 'M',
                 value: cmyk[1],
                 chartSize: chartSize,
                 isLight: isLight,
               ),
+              SizedBox(height: divideH),
               ValueChart(
                 label: 'Y',
                 value: cmyk[2],
                 chartSize: chartSize,
                 isLight: isLight,
               ),
+              SizedBox(height: divideH),
               ValueChart(
                 label: 'K',
                 value: cmyk[3],
