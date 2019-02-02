@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 import 'package:event_bus/event_bus.dart';
 import 'dart:math';
 
@@ -14,6 +15,21 @@ class UpdateColorEvent {
   NipponColor updatedColor;
 
   UpdateColorEvent(this.updatedIndex, this.updatedColor);
+}
+
+class UpdateR {
+  int r;
+  UpdateR(this.r);
+}
+
+class UpdateG {
+  int g;
+  UpdateG(this.g);
+}
+
+class UpdateB {
+  int b;
+  UpdateB(this.b);
 }
 
 class SelectColorEvent {
@@ -39,7 +55,6 @@ class _HomePageState extends State<HomePage> {
 
   void initState() {
     super.initState();
-    debugPrint('init');
     setState(() {
       colors = allColors;
       colorCount = allColors.length;
@@ -62,8 +77,11 @@ class _HomePageState extends State<HomePage> {
     // 生成一个新的颜色并fire
     final int newIndex = Random().nextInt(colorCount - 1);
     final newColor = NipponColor.fromMap(colors[newIndex]);
-    debugPrint('tap screen - new color: ${newColor.cname}');
+    List<int> rgb = newColor.getRGB();
     eventBus.fire(UpdateColorEvent(newIndex, newColor));
+    eventBus.fire(UpdateR(rgb[0]));
+    eventBus.fire(UpdateG(rgb[1]));
+    eventBus.fire(UpdateB(rgb[2]));
   }
 
   // 点击颜色名称事件
@@ -80,11 +98,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // setState(() {
-    //   colorIndex = Random().nextInt(colorCount - 1); // 随机产生一个颜色编号
-    //   nipponColor = NipponColor.fromMap(colors[colorIndex]); // 实例化NipponColor
-    // });
-
     final Size screenSize = MediaQuery.of(context).size;
 
     return GestureDetector(
@@ -94,10 +107,6 @@ class _HomePageState extends State<HomePage> {
         body: Column(
           children: <Widget>[
             Expanded(
-              child: SizedBox(),
-            ),
-            Expanded(
-              flex: 4, // 颜色名称离屏幕上边框的距离
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[
@@ -109,9 +118,232 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+            Expanded(
+              flex: 4, // 颜色名称离屏幕上边框的距离
+              child: RGBCircularChart(nipponColor),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class RGBCircularChart extends StatefulWidget {
+  final NipponColor color;
+
+  RGBCircularChart(this.color);
+
+  @override
+  State<StatefulWidget> createState() => _RGBCircularState();
+}
+
+class _RGBCircularState extends State<RGBCircularChart> {
+  List<int> rgb;
+  bool isLight;
+
+  @override
+  Widget build(BuildContext context) {
+    // 设置环形图大小为屏幕宽度的1/5
+    final screenWidth = MediaQuery.of(context).size.width;
+    final chartSize = Size(screenWidth / 8, screenWidth / 8);
+    // final chartSize = Size(40, 40);
+
+    rgb = widget.color.getRGB();
+    isLight = widget.color.isLight();
+
+    return Row(
+      children: <Widget>[
+        // 竖线
+        Container(
+          height: chartSize.height * 2.8,
+          width: 1.0,
+          color: createColorStyle(isLight),
+          margin: const EdgeInsets.only(left: 10.0, right: 8.0),
+        ),
+        Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              ValueChart(
+                label: 'R',
+                value: rgb[0],
+                chartSize: chartSize,
+                isLight: isLight,
+              ),
+              ValueChart(
+                label: 'G',
+                value: rgb[1],
+                chartSize: chartSize,
+                isLight: isLight,
+              ),
+              ValueChart(
+                label: 'B',
+                value: rgb[2],
+                chartSize: chartSize,
+                isLight: isLight,
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// 根据数据显示环状图
+class ValueChart extends StatefulWidget {
+  final String label; // 显示文字
+  final int value; // 数据值
+  final bool isLight; // 当前背景是否偏白
+  final Size chartSize;
+
+  ValueChart({Key key, this.label, this.value, this.isLight, this.chartSize})
+      : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _ValueChartState();
+}
+
+class _ValueChartState extends State<ValueChart> {
+  final _chartKey = GlobalKey<AnimatedCircularChartState>();
+  bool isLight;
+
+  double v1, v2;
+
+  void initState() {
+    super.initState();
+    eventBus.on<UpdateColorEvent>().listen((UpdateColorEvent data) {
+      setState(() {
+        isLight = data.updatedColor.isLight();
+      });
+    });
+    switch (widget.label) {
+      case 'R':
+        eventBus.on<UpdateR>().listen((UpdateR data) {
+          double v1 = data.r / 255 * 100;
+          double v2 = 100 - v1;
+          List<CircularStackEntry> nextData = <CircularStackEntry>[
+            CircularStackEntry(
+              <CircularSegmentEntry>[
+                CircularSegmentEntry(
+                  v1, // 数值
+                  createColorStyle(isLight),
+                  rankKey: 'value',
+                ),
+                CircularSegmentEntry(
+                  v2, // 数值
+                  createColorStyle(isLight).withOpacity(0.3),
+                  rankKey: 'remaining',
+                ),
+              ],
+            ),
+          ];
+          setState(() {
+            _chartKey.currentState.updateData(nextData);
+          });
+        });
+        break;
+      case 'G':
+        eventBus.on<UpdateG>().listen((UpdateG data) {
+          double v1 = data.g / 255 * 100;
+          double v2 = 100 - v1;
+          List<CircularStackEntry> nextData = <CircularStackEntry>[
+            CircularStackEntry(
+              <CircularSegmentEntry>[
+                CircularSegmentEntry(
+                  v1, // 数值
+                  createColorStyle(isLight),
+                  rankKey: 'value',
+                ),
+                CircularSegmentEntry(
+                  v2, // 数值
+                  createColorStyle(isLight).withOpacity(0.3),
+                  rankKey: 'remaining',
+                ),
+              ],
+            ),
+          ];
+          setState(() {
+            _chartKey.currentState.updateData(nextData);
+          });
+        });
+        break;
+      case 'B':
+        eventBus.on<UpdateB>().listen((UpdateB data) {
+          double v1 = data.b / 255 * 100;
+          double v2 = 100 - v1;
+          List<CircularStackEntry> nextData = <CircularStackEntry>[
+            CircularStackEntry(
+              <CircularSegmentEntry>[
+                CircularSegmentEntry(
+                  v1, // 数值
+                  createColorStyle(isLight),
+                  rankKey: 'value',
+                ),
+                CircularSegmentEntry(
+                  v2, // 数值
+                  createColorStyle(isLight).withOpacity(0.3),
+                  rankKey: 'remaining',
+                ),
+              ],
+            ),
+          ];
+          setState(() {
+            _chartKey.currentState.updateData(nextData);
+          });
+        });
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 转换为百分比的分子
+    v1 = widget.value / 255 * 100;
+    v2 = 100 - v1;
+
+    isLight = widget.isLight;
+
+    List<CircularStackEntry> data = <CircularStackEntry>[
+      CircularStackEntry(
+        <CircularSegmentEntry>[
+          CircularSegmentEntry(
+            v1, // 数值
+            createColorStyle(widget.isLight),
+            rankKey: 'value',
+          ),
+          CircularSegmentEntry(
+            v2, // 数值
+            createColorStyle(widget.isLight).withOpacity(0.3),
+            rankKey: 'remaining',
+          ),
+        ],
+      ),
+    ];
+
+    return Row(
+      children: <Widget>[
+        AnimatedCircularChart(
+          holeLabel: widget.label, // 显示label
+          labelStyle: TextStyle(
+            fontSize: widget.chartSize.width * 0.5,
+            color: createColorStyle(isLight), // 动态创建黑白字体颜色
+          ),
+          key: _chartKey,
+          size: widget.chartSize,
+          initialChartData: data,
+          chartType: CircularChartType.Radial,
+          edgeStyle: SegmentEdgeStyle.round,
+          percentageValues: true,
+        ),
+        Text(
+          // 显示数值
+          widget.value.toString(),
+          style: TextStyle(color: createColorStyle(isLight)),
+        ),
+      ],
     );
   }
 }
