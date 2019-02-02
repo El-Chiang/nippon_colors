@@ -80,31 +80,40 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
-
     return GestureDetector(
       onTap: _handleTapScreen,
       child: Scaffold(
         backgroundColor: nipponColor.color,
         body: Column(
           children: <Widget>[
-            Expanded(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  GestureDetector(
-                    child: ColorNameContainer(color: nipponColor), // 颜色名称
-                    onTap: _handleTapName,
-                  ),
-                  SizedBox(width: screenSize.width * 0.05), // 颜色名称离屏幕右边框的距离
-                ],
-              ),
+            SizedBox(height: screenSize.height * 0.15), // 颜色名称离屏幕上边框的距离
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                GestureDetector(
+                  child: ColorNameContainer(color: nipponColor), // 颜色名称
+                  onTap: _handleTapName,
+                ),
+                SizedBox(width: screenSize.width * 0.05), // 颜色名称离屏幕右边框的距离
+              ],
             ),
             Expanded(
-              flex: 4, // 颜色名称离屏幕上边框的距离
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   RGBCircularChart(nipponColor),
                   CMYKCircularChart(nipponColor),
+                  Container(
+                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                    child: Text(
+                      '#${nipponColor.hex}',
+                      style: TextStyle(
+                        color: createColorStyle(nipponColor.isLight()),
+                        fontSize: 16,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -155,7 +164,7 @@ class _ValueChartState extends State<ValueChart> {
           v1 = rgb[2] / 255 * 100;
           break;
         case 'C':
-          v1 =cmyk[0].toDouble();
+          v1 = cmyk[0].toDouble();
           break;
         case 'M':
           v1 = cmyk[1].toDouble();
@@ -328,7 +337,7 @@ class _CMYKCircularState extends State<CMYKCircularChart> {
       children: <Widget>[
         // 竖线
         Container(
-          height: chartSize.height * 2.8,
+          height: chartSize.height * 3.5,
           width: 1.0,
           color: createColorStyle(isLight),
           margin: const EdgeInsets.only(left: 10.0, right: 8.0),
