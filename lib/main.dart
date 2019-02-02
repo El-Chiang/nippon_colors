@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'pages/home_page.dart';
+
 void main() {
   SystemChrome.setEnabledSystemUIOverlays([]); // 隐藏status bar
   runApp(MyApp());
@@ -12,7 +14,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Nihon',
-      home: MyHomePage(),
+      home: HomePage(),
       debugShowCheckedModeBanner: false,
     );
   }
