@@ -17,21 +17,6 @@ class UpdateColorEvent {
   UpdateColorEvent(this.updatedIndex, this.updatedColor);
 }
 
-class UpdateR {
-  int r;
-  UpdateR(this.r);
-}
-
-class UpdateG {
-  int g;
-  UpdateG(this.g);
-}
-
-class UpdateB {
-  int b;
-  UpdateB(this.b);
-}
-
 class SelectColorEvent {
   NipponColor selectedColor;
   bool active;
@@ -77,11 +62,7 @@ class _HomePageState extends State<HomePage> {
     // 生成一个新的颜色并fire
     final int newIndex = Random().nextInt(colorCount - 1);
     final newColor = NipponColor.fromMap(colors[newIndex]);
-    List<int> rgb = newColor.getRGB();
     eventBus.fire(UpdateColorEvent(newIndex, newColor));
-    eventBus.fire(UpdateR(rgb[0]));
-    eventBus.fire(UpdateG(rgb[1]));
-    eventBus.fire(UpdateB(rgb[2]));
   }
 
   // 点击颜色名称事件
@@ -120,74 +101,16 @@ class _HomePageState extends State<HomePage> {
             ),
             Expanded(
               flex: 4, // 颜色名称离屏幕上边框的距离
-              child: RGBCircularChart(nipponColor),
+              child: Column(
+                children: <Widget>[
+                  RGBCircularChart(nipponColor),
+                  CMYKCircularChart(nipponColor),
+                ],
+              ),
             ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class RGBCircularChart extends StatefulWidget {
-  final NipponColor color;
-
-  RGBCircularChart(this.color);
-
-  @override
-  State<StatefulWidget> createState() => _RGBCircularState();
-}
-
-class _RGBCircularState extends State<RGBCircularChart> {
-  List<int> rgb;
-  bool isLight;
-
-  @override
-  Widget build(BuildContext context) {
-    // 设置环形图大小为屏幕宽度的1/5
-    final screenWidth = MediaQuery.of(context).size.width;
-    final chartSize = Size(screenWidth / 8, screenWidth / 8);
-    // final chartSize = Size(40, 40);
-
-    rgb = widget.color.getRGB();
-    isLight = widget.color.isLight();
-
-    return Row(
-      children: <Widget>[
-        // 竖线
-        Container(
-          height: chartSize.height * 2.8,
-          width: 1.0,
-          color: createColorStyle(isLight),
-          margin: const EdgeInsets.only(left: 10.0, right: 8.0),
-        ),
-        Container(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              ValueChart(
-                label: 'R',
-                value: rgb[0],
-                chartSize: chartSize,
-                isLight: isLight,
-              ),
-              ValueChart(
-                label: 'G',
-                value: rgb[1],
-                chartSize: chartSize,
-                isLight: isLight,
-              ),
-              ValueChart(
-                label: 'B',
-                value: rgb[2],
-                chartSize: chartSize,
-                isLight: isLight,
-              )
-            ],
-          ),
-        ),
-      ],
     );
   }
 }
@@ -215,87 +138,56 @@ class _ValueChartState extends State<ValueChart> {
   void initState() {
     super.initState();
     eventBus.on<UpdateColorEvent>().listen((UpdateColorEvent data) {
+      NipponColor color = data.updatedColor;
+      setState(() => isLight = color.isLight());
+      List rgb = color.getRGB();
+      List cmyk = color.getCMYK();
+      double v1, v2;
+
+      switch (widget.label) {
+        case 'R':
+          v1 = rgb[0] / 255 * 100;
+          break;
+        case 'G':
+          v1 = rgb[1] / 255 * 100;
+          break;
+        case 'B':
+          v1 = rgb[2] / 255 * 100;
+          break;
+        case 'C':
+          v1 =cmyk[0].toDouble();
+          break;
+        case 'M':
+          v1 = cmyk[1].toDouble();
+          break;
+        case 'Y':
+          v1 = cmyk[2].toDouble();
+          break;
+        case 'K':
+          v1 = cmyk[3].toDouble();
+          break;
+      }
+      v2 = 100 - v1;
+      List<CircularStackEntry> nextData = <CircularStackEntry>[
+        CircularStackEntry(
+          <CircularSegmentEntry>[
+            CircularSegmentEntry(
+              v1, // 数值
+              createColorStyle(isLight),
+              rankKey: 'value',
+            ),
+            CircularSegmentEntry(
+              v2, // 数值
+              createColorStyle(isLight).withOpacity(0.3),
+              rankKey: 'remaining',
+            ),
+          ],
+        ),
+      ];
       setState(() {
-        isLight = data.updatedColor.isLight();
+        _chartKey.currentState.updateData(nextData);
       });
     });
-    switch (widget.label) {
-      case 'R':
-        eventBus.on<UpdateR>().listen((UpdateR data) {
-          double v1 = data.r / 255 * 100;
-          double v2 = 100 - v1;
-          List<CircularStackEntry> nextData = <CircularStackEntry>[
-            CircularStackEntry(
-              <CircularSegmentEntry>[
-                CircularSegmentEntry(
-                  v1, // 数值
-                  createColorStyle(isLight),
-                  rankKey: 'value',
-                ),
-                CircularSegmentEntry(
-                  v2, // 数值
-                  createColorStyle(isLight).withOpacity(0.3),
-                  rankKey: 'remaining',
-                ),
-              ],
-            ),
-          ];
-          setState(() {
-            _chartKey.currentState.updateData(nextData);
-          });
-        });
-        break;
-      case 'G':
-        eventBus.on<UpdateG>().listen((UpdateG data) {
-          double v1 = data.g / 255 * 100;
-          double v2 = 100 - v1;
-          List<CircularStackEntry> nextData = <CircularStackEntry>[
-            CircularStackEntry(
-              <CircularSegmentEntry>[
-                CircularSegmentEntry(
-                  v1, // 数值
-                  createColorStyle(isLight),
-                  rankKey: 'value',
-                ),
-                CircularSegmentEntry(
-                  v2, // 数值
-                  createColorStyle(isLight).withOpacity(0.3),
-                  rankKey: 'remaining',
-                ),
-              ],
-            ),
-          ];
-          setState(() {
-            _chartKey.currentState.updateData(nextData);
-          });
-        });
-        break;
-      case 'B':
-        eventBus.on<UpdateB>().listen((UpdateB data) {
-          double v1 = data.b / 255 * 100;
-          double v2 = 100 - v1;
-          List<CircularStackEntry> nextData = <CircularStackEntry>[
-            CircularStackEntry(
-              <CircularSegmentEntry>[
-                CircularSegmentEntry(
-                  v1, // 数值
-                  createColorStyle(isLight),
-                  rankKey: 'value',
-                ),
-                CircularSegmentEntry(
-                  v2, // 数值
-                  createColorStyle(isLight).withOpacity(0.3),
-                  rankKey: 'remaining',
-                ),
-              ],
-            ),
-          ];
-          setState(() {
-            _chartKey.currentState.updateData(nextData);
-          });
-        });
-        break;
-    }
   }
 
   @override
@@ -342,6 +234,136 @@ class _ValueChartState extends State<ValueChart> {
           // 显示数值
           widget.value.toString(),
           style: TextStyle(color: createColorStyle(isLight)),
+        ),
+      ],
+    );
+  }
+}
+
+class RGBCircularChart extends StatefulWidget {
+  final NipponColor color;
+
+  RGBCircularChart(this.color);
+
+  @override
+  State<StatefulWidget> createState() => _RGBCircularState();
+}
+
+class _RGBCircularState extends State<RGBCircularChart> {
+  List<int> rgb;
+  bool isLight;
+
+  @override
+  Widget build(BuildContext context) {
+    // 设置环形图大小为屏幕宽度的1/5
+    final screenWidth = MediaQuery.of(context).size.width;
+    final chartSize = Size(screenWidth / 8, screenWidth / 8);
+
+    rgb = widget.color.getRGB();
+    isLight = widget.color.isLight();
+
+    return Row(
+      children: <Widget>[
+        // 竖线
+        Container(
+          height: chartSize.height * 2.8,
+          width: 1.0,
+          color: createColorStyle(isLight),
+          margin: const EdgeInsets.only(left: 10.0, right: 8.0),
+        ),
+        Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              ValueChart(
+                label: 'R',
+                value: rgb[0],
+                chartSize: chartSize,
+                isLight: isLight,
+              ),
+              ValueChart(
+                label: 'G',
+                value: rgb[1],
+                chartSize: chartSize,
+                isLight: isLight,
+              ),
+              ValueChart(
+                label: 'B',
+                value: rgb[2],
+                chartSize: chartSize,
+                isLight: isLight,
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class CMYKCircularChart extends StatefulWidget {
+  final NipponColor color;
+
+  CMYKCircularChart(this.color);
+
+  @override
+  State<StatefulWidget> createState() => _CMYKCircularState();
+}
+
+class _CMYKCircularState extends State<CMYKCircularChart> {
+  List<int> cmyk;
+  bool isLight;
+
+  @override
+  Widget build(BuildContext context) {
+    // 设置环形图大小为屏幕宽度的1/5
+    final screenWidth = MediaQuery.of(context).size.width;
+    final chartSize = Size(screenWidth / 8, screenWidth / 8);
+
+    cmyk = widget.color.getCMYK();
+    isLight = widget.color.isLight();
+
+    return Row(
+      children: <Widget>[
+        // 竖线
+        Container(
+          height: chartSize.height * 2.8,
+          width: 1.0,
+          color: createColorStyle(isLight),
+          margin: const EdgeInsets.only(left: 10.0, right: 8.0),
+        ),
+        Container(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              ValueChart(
+                label: 'C',
+                value: cmyk[0],
+                chartSize: chartSize,
+                isLight: isLight,
+              ),
+              ValueChart(
+                label: 'M',
+                value: cmyk[1],
+                chartSize: chartSize,
+                isLight: isLight,
+              ),
+              ValueChart(
+                label: 'Y',
+                value: cmyk[2],
+                chartSize: chartSize,
+                isLight: isLight,
+              ),
+              ValueChart(
+                label: 'K',
+                value: cmyk[3],
+                chartSize: chartSize,
+                isLight: isLight,
+              )
+            ],
+          ),
         ),
       ],
     );
