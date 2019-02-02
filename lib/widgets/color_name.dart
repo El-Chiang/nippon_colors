@@ -25,7 +25,13 @@ class _ColorNameState extends State<ColorNameContainer> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
-        Text(cname, style: textStyle.copyWith(fontSize: 36)),
+        Text(
+          cname,
+          style: textStyle.copyWith(
+            fontSize: 36,
+            fontFamily: 'Mincho',
+          ),
+        ),
         Text(name, style: textStyle.copyWith(fontSize: 14)),
       ],
     );

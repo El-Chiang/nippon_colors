@@ -11,12 +11,11 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    
     return MaterialApp(
       title: 'Nihon',
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
-        '/': (BuildContext context) =>  HomePage(),
+        '/': (BuildContext context) => HomePage(),
       },
       // home: HomePage(),
       debugShowCheckedModeBanner: false,
