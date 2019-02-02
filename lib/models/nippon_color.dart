@@ -45,9 +45,9 @@ class NipponColor {
 
   // 判断颜色是否偏白以便设置字体颜色
   bool isLight() {
-    final hslColor = HSLColor.fromColor(color);
-    final double lightness = hslColor.lightness;
-    if (lightness > 0.8)
+    final List<int> rgb = getRGB();
+    final double brightness = rgb[0]/255*0.299 + rgb[1]/255*0.587 + rgb[2]/255*0.114;
+    if (brightness > 0.8)
       return true;
     else
       return false;
