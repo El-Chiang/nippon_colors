@@ -13,19 +13,13 @@ class ColorItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
+    // 点击相应颜色
     void handleTapItem() {
       debugPrint('tap item ${nipponColor.cname}');
       eventBus.fire(UpdateColorEvent(nipponColor.id - 1, nipponColor));
-      // Navigator.pushAndRemoveUntil(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => HomePage(),
-      //     maintainState: false,
-      //   ),
-      //   ModalRoute.withName('/'),
-      // );
       Navigator.pop(context);
     }
+
     return GestureDetector(
       onTap: handleTapItem,
       child: Container(
@@ -46,13 +40,20 @@ class ColorItem extends StatelessWidget {
 // 调色板页面
 class PalettePage extends StatelessWidget {
   final List<Map<String, dynamic>> colors;
+  final int index;
 
-  PalettePage({@required this.colors});
+  PalettePage({@required this.colors, index}) : this.index = index ?? 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: ListView.builder(
+          // 设置ListView偏移量
+          controller: ScrollController(
+            // 用index-3代替index为了让当前颜色在屏幕中间显示
+            initialScrollOffset: 100.0 * (index - 3),
+          ),
+          itemExtent: 100,
           itemCount: colors.length - 1,
           itemBuilder: (context, index) {
             NipponColor color = NipponColor.fromMap(colors[index]);

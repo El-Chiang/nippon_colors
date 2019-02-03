@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
     eventBus.on<SelectColorEvent>().listen((SelectColorEvent data) {});
   }
 
-  // 点击屏幕事件
+  // 点击屏幕事件 -> 随机产生一个新的颜色
   void _handleTapScreen() {
     // 生成一个新的颜色并fire
     final int newIndex = Random().nextInt(colorCount - 1);
@@ -67,12 +67,12 @@ class _HomePageState extends State<HomePage> {
     eventBus.fire(UpdateColorEvent(newIndex, newColor));
   }
 
-  // 点击颜色名称事件
+  // 点击颜色名称事件 -> 跳转到调色板界面显示所有颜色
   void _handleTapName() {
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => PalettePage(colors: colors),
+        builder: (context) => PalettePage(colors: colors, index: colorIndex),
         maintainState: false,
       ),
       ModalRoute.withName('/'),
