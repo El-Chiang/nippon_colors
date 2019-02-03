@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
 import 'package:event_bus/event_bus.dart';
 import 'dart:math';
@@ -79,6 +80,41 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _handleTapBranch() {
+    debugPrint('click image');
+    showCupertinoDialog(
+      context: context,
+      builder: (context) => CupertinoAlertDialog(
+        actions: <Widget>[
+          CupertinoDialogAction(
+            child: const Text('🌟标记喜欢', style: TextStyle(color: Colors.black)),
+            onPressed: () {
+              Navigator.pop(context, 'Cheesecake');
+            },
+          ),
+          CupertinoDialogAction(
+            child: const Text('🌠我喜欢的', style: TextStyle(color: Colors.black)),
+            onPressed: () {
+              Navigator.pop(context, 'Cheesecake');
+            },
+          ),
+          CupertinoDialogAction(
+            child: const Text('📲生成图片', style: TextStyle(color: Colors.black)),
+            onPressed: () {
+              Navigator.pop(context, 'Cheesecake');
+            },
+          ),
+          CupertinoDialogAction(
+            child: const Text('❓使用提示', style: TextStyle(color: Colors.black)),
+            onPressed: () {
+              Navigator.pop(context, 'Cheesecake');
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
@@ -105,6 +141,18 @@ class _HomePageState extends State<HomePage> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  GestureDetector(
+                    child: Container(
+                      width: 30,
+                      child: Image.asset(
+                        'assets/images/branch.png', // 树枝图片
+                        fit: BoxFit.fitWidth,
+                        color: createColorStyle(nipponColor.isLight()),
+                      ),
+                    ),
+                    onTap: _handleTapBranch,
+                  ),
+                  SizedBox(height: divideH),
                   RGBCircularChart(nipponColor), // RGB环状图
                   SizedBox(height: divideH),
                   CMYKCircularChart(nipponColor), // CMYK环状图
