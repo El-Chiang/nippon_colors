@@ -1,29 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_circular_chart/flutter_circular_chart.dart';
-import 'package:event_bus/event_bus.dart';
 import 'dart:math';
 
 import '../utils/utils.dart';
+import '../actions/event_actions.dart';
 import '../models/nippon_color.dart';
 import '../widgets/color_name.dart';
 import 'palette_page.dart';
-
-EventBus eventBus = EventBus();
-
-class UpdateColorEvent {
-  int updatedIndex;
-  NipponColor updatedColor;
-
-  UpdateColorEvent(this.updatedIndex, this.updatedColor);
-}
-
-class SelectColorEvent {
-  NipponColor selectedColor;
-  bool active;
-
-  SelectColorEvent(this.selectedColor, this.active);
-}
 
 class HomePage extends StatefulWidget {
   final NipponColor color;

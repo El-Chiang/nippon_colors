@@ -38,7 +38,7 @@ class NipponColor {
         (C * 100).round(),
         (M * 100).round(),
         (Y * 100).round(),
-        (C * 100).round(),
+        (K * 100).round(),
       ];
     }
   }
@@ -46,11 +46,8 @@ class NipponColor {
   // 判断颜色是否偏白以便设置字体颜色
   bool isLight() {
     final List<int> rgb = getRGB();
-    final double brightness = rgb[0]/255*0.299 + rgb[1]/255*0.587 + rgb[2]/255*0.114;
-    if (brightness > 0.8)
-      return true;
-    else
-      return false;
+    final double brightness = (rgb[0]*0.3 + rgb[1]*0.59 + rgb[2]*0.11) / 255;
+    return brightness > 0.8 ? true : false;
   }
 
   @override

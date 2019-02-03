@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../models/nippon_color.dart';
 import '../widgets/color_name.dart';
-import 'home_page.dart';
+import '../actions/event_actions.dart';
 
 // 颜色条
 class ColorItem extends StatelessWidget {
