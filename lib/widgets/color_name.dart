@@ -4,8 +4,11 @@ import '../utils/utils.dart';
 
 class ColorNameContainer extends StatefulWidget {
   final NipponColor color;
+  final double ratio;
 
-  ColorNameContainer({Key key, @required this.color}) : super(key: key);
+  ColorNameContainer({Key key, @required this.color, ratio})
+      : ratio = ratio ?? 1,
+        super(key: key);
 
   @override
   State<StatefulWidget> createState() => _ColorNameState();
@@ -21,6 +24,8 @@ class _ColorNameState extends State<ColorNameContainer> {
     nipponColor = widget.color;
     name = nipponColor.name;
     cname = nipponColor.cname;
+    final double ratio = widget.ratio;
+
     final textStyle = TextStyle(color: createColorStyle(nipponColor.isLight()));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -28,12 +33,12 @@ class _ColorNameState extends State<ColorNameContainer> {
         Text(
           cname,
           style: textStyle.copyWith(
-              fontSize: 36, fontFamily: 'Mincho', fontWeight: FontWeight.w200),
+              fontSize: 36 * ratio, fontFamily: 'Mincho', fontWeight: FontWeight.w200),
         ),
-        SizedBox(height: 10),
+        SizedBox(height: 10 * ratio),
         Text(name,
             style: textStyle.copyWith(
-              fontSize: 18,
+              fontSize: 18 * ratio,
               fontWeight: FontWeight.w200,
             )),
       ],

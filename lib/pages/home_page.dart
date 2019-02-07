@@ -111,7 +111,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ImagePage(),
+        builder: (context) => ImagePage(nipponColor),
       ),
     );
   }
@@ -248,9 +248,9 @@ class _HomePageState extends State<HomePage> {
                     onTap: _handleTapBranch,
                   ),
                   SizedBox(height: divideH),
-                  RGBCircularChart(nipponColor), // RGB环状图
+                  RGBCircularChart(color: nipponColor), // RGB环状图
                   SizedBox(height: divideH),
-                  CMYKCircularChart(nipponColor), // CMYK环状图
+                  CMYKCircularChart(color: nipponColor), // CMYK环状图
                   Container(
                     // Hex值
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),

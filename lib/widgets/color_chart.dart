@@ -137,8 +137,9 @@ class _ValueChartState extends State<ValueChart> {
 
 class RGBCircularChart extends StatefulWidget {
   final NipponColor color;
+  final double ratio;
 
-  RGBCircularChart(this.color);
+  RGBCircularChart({this.color, ratio}) : ratio = ratio ?? 1;
 
   @override
   State<StatefulWidget> createState() => _RGBCircularState();
@@ -151,7 +152,8 @@ class _RGBCircularState extends State<RGBCircularChart> {
   @override
   Widget build(BuildContext context) {
     // 设置环形图大小为屏幕宽度的0.12
-    final screenWidth = MediaQuery.of(context).size.width;
+    final ratio = widget.ratio;
+    final screenWidth = MediaQuery.of(context).size.width*ratio;
     final chartSize = Size(screenWidth * 0.12, screenWidth * 0.12);
     final double divideH = chartSize.width * 0.1;
 
@@ -202,8 +204,9 @@ class _RGBCircularState extends State<RGBCircularChart> {
 
 class CMYKCircularChart extends StatefulWidget {
   final NipponColor color;
+  final double ratio;
 
-  CMYKCircularChart(this.color);
+  CMYKCircularChart({this.color, ratio}) : ratio = ratio ?? 1;
 
   @override
   State<StatefulWidget> createState() => _CMYKCircularState();
@@ -216,7 +219,8 @@ class _CMYKCircularState extends State<CMYKCircularChart> {
   @override
   Widget build(BuildContext context) {
     // 设置环形图大小为屏幕宽度的0.12
-    final screenWidth = MediaQuery.of(context).size.width;
+    final double ratio = widget.ratio;
+    final screenWidth = MediaQuery.of(context).size.width * ratio;
     final chartSize = Size(screenWidth * 0.12, screenWidth * 0.12);
     final double divideH = chartSize.width * 0.1;
 
