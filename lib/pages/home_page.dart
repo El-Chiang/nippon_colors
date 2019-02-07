@@ -94,8 +94,8 @@ class _HomePageState extends State<HomePage> {
     List<NipponColor> favoriteColors = allFavorite.map((favoriteId) {
       int index = int.parse(favoriteId) - 1; // 因为id从1开始所以实际列表中的index要-1
       return NipponColor.fromMap(colors[index]);
-    }).toList(); // TODO: 去重 同一个颜色不能被标记喜欢多次
-    // debugPrint(favoriteColors.toString());
+    }).toList();
+    debugPrint(favoriteColors.toString());
     Navigator.pop(context); // 先关闭dialog再push
     Navigator.push(
       context,
@@ -107,6 +107,7 @@ class _HomePageState extends State<HomePage> {
 
   /// 点击树枝 -> 弹出菜单dialog
   void _handleTapBranch() {
+    debugPrint(allFavorite.length.toString());
     bool isFavorite;
     if (allFavorite.contains(nipponColor.id.toString()))
       isFavorite = true; // 当isFavorite为true显示“取消喜欢”
@@ -114,7 +115,48 @@ class _HomePageState extends State<HomePage> {
       isFavorite = false; // 当isFavorite为false显示“标记喜欢”
     showCupertinoDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
+      builder: (context) { // 当用户没有任何喜欢颜色时隐藏“我喜欢的”入口
+        if (allFavorite.length == 0) {
+          return CupertinoAlertDialog(
+            actions: <Widget>[
+              isFavorite
+                  ? CupertinoDialogAction(
+                      child: Text(
+                        '😪取消喜欢',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      onPressed: _cancelFavorite,
+                    )
+                  : CupertinoDialogAction(
+                      child: Text(
+                        '🌟标记喜欢',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      onPressed: _markAsFavorite,
+                    ),
+              CupertinoDialogAction(
+                child: Text('📲生成图片', style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text('❓使用提示', style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              CupertinoDialogAction(
+                child: const Text('返回'),
+                isDefaultAction: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        } else {
+          return CupertinoAlertDialog(
             actions: <Widget>[
               isFavorite
                   ? CupertinoDialogAction(
@@ -155,7 +197,9 @@ class _HomePageState extends State<HomePage> {
                 },
               ),
             ],
-          ),
+          );
+        }
+      },
     );
   }
 
