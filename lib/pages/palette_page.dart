@@ -53,7 +53,7 @@ class PalettePage extends StatelessWidget {
             // 用index-3代替index为了让当前颜色在屏幕中间显示
             initialScrollOffset: 100.0 * (index - 3),
           ),
-          itemExtent: 100,
+          itemExtent: 110,
           itemCount: colors.length - 1,
           itemBuilder: (context, index) {
             NipponColor color = NipponColor.fromMap(colors[index]);

@@ -3,6 +3,7 @@ import '../models/nippon_color.dart';
 
 EventBus eventBus = EventBus();
 
+// 点击屏幕时更新颜色
 class UpdateColorEvent {
   int updatedIndex;
   NipponColor updatedColor;
@@ -10,9 +11,16 @@ class UpdateColorEvent {
   UpdateColorEvent(this.updatedIndex, this.updatedColor);
 }
 
+// 选择一个颜色
 class SelectColorEvent {
   NipponColor selectedColor;
-  bool active;
 
-  SelectColorEvent(this.selectedColor, this.active);
+  SelectColorEvent(this.selectedColor);
+}
+
+// 更新我喜欢的颜色
+class UpdateFavoriteColors {
+  List<String> favoriteColors;
+
+  UpdateFavoriteColors(this.favoriteColors);
 }

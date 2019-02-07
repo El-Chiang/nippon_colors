@@ -1,6 +1,16 @@
 import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math';
+
+final String favoriteKey = 'favorite';
+
+// 获取所有用户标记喜欢的颜色
+Future<List<String>> getAllFavorite() async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  List<String> favoriteList = prefs.getStringList(favoriteKey);
+  return favoriteList;
+}
 
 class NipponColor {
   final int id;
@@ -48,6 +58,24 @@ class NipponColor {
     final List<int> rgb = getRGB();
     final double brightness = (rgb[0]*0.3 + rgb[1]*0.59 + rgb[2]*0.11) / 255;
     return brightness > 0.8 ? true : false;
+  }
+
+  // 保存颜色到喜欢列表里
+  Future<List<String>> saveToFavorite() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> allFavorite = (await getAllFavorite()) ?? [];
+    allFavorite.add(id.toString()); // 按id存储
+    prefs.setStringList(favoriteKey, allFavorite);
+    return allFavorite;
+  }
+
+  // 取消喜欢
+  Future<List<String>> cancelFavorite() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> allFavorite = (await getAllFavorite()) ?? [];
+    allFavorite = allFavorite.where((favoriteId) => favoriteId != id.toString()).toList();
+    prefs.setStringList(favoriteKey, allFavorite);
+    return allFavorite;
   }
 
   @override

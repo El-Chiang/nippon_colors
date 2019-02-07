@@ -8,31 +8,38 @@ import '../actions/event_actions.dart';
 import '../models/nippon_color.dart';
 import '../widgets/color_name.dart';
 import 'palette_page.dart';
+import 'favorite_page.dart';
 
 class HomePage extends StatefulWidget {
   final NipponColor color;
-  HomePage({Key key, this.color}) : super(key: key);
+  final List<String> myFavorite;
+
+  HomePage({Key key, this.color, this.myFavorite}) : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Map<String, dynamic>> colors;
+  List<Map<String, dynamic>> colors; // 所有日本传统色
+  List<String> allFavorite; // 所有用户喜欢的颜色
   int colorCount;
   int colorIndex;
   NipponColor nipponColor;
 
+  /// 初始化状态并绑定监听事件
   void initState() {
     super.initState();
     if (this.mounted) {
       setState(() {
         colors = allColors;
         colorCount = allColors.length;
+        allFavorite = widget.myFavorite;
         colorIndex = Random().nextInt(colorCount - 1); // 随机产生一个颜色编号
         nipponColor = NipponColor.fromMap(colors[colorIndex]); // 实例化NipponColor
       });
     }
+    // 当颜色改变时更新状态
     eventBus.on<UpdateColorEvent>().listen((UpdateColorEvent data) {
       if (this.mounted) {
         setState(() {
@@ -41,18 +48,22 @@ class _HomePageState extends State<HomePage> {
         });
       }
     });
+    // 当用户选择一个颜色时更新状态
     eventBus.on<SelectColorEvent>().listen((SelectColorEvent data) {});
+    // 当用户标记一个喜欢的颜色时更新状态
+    eventBus.on<UpdateFavoriteColors>().listen((UpdateFavoriteColors data) {
+      if (this.mounted) setState(() => allFavorite = data.favoriteColors);
+    });
   }
 
-  // 点击屏幕事件 -> 随机产生一个新的颜色
+  /// 点击屏幕事件 -> 随机产生一个新的颜色
   void _handleTapScreen() {
-    // 生成一个新的颜色并fire
     final int newIndex = Random().nextInt(colorCount - 1);
     final newColor = NipponColor.fromMap(colors[newIndex]);
     eventBus.fire(UpdateColorEvent(newIndex, newColor));
   }
 
-  // 点击颜色名称事件 -> 跳转到调色板界面显示所有颜色
+  /// 点击颜色名称事件 -> 跳转到调色板界面显示所有颜色
   void _handleTapName() {
     Navigator.pushAndRemoveUntil(
       context,
@@ -64,38 +75,87 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 点击“标记喜欢”事件
+  void _markAsFavorite() async {
+    List<String> myFavorite = await nipponColor.saveToFavorite();
+    eventBus.fire(UpdateFavoriteColors(myFavorite));
+    Navigator.pop(context);
+  }
+
+  /// 点击“取消喜欢”事件
+  void _cancelFavorite() async {
+    List<String> myFavorite = await nipponColor.cancelFavorite();
+    eventBus.fire(UpdateFavoriteColors(myFavorite));
+    Navigator.pop(context);
+  }
+
+  /// 点击“我喜欢的”事件
+  void _getMyFavorite() async {
+    List<NipponColor> favoriteColors = allFavorite.map((favoriteId) {
+      int index = int.parse(favoriteId) - 1; // 因为id从1开始所以实际列表中的index要-1
+      return NipponColor.fromMap(colors[index]);
+    }).toList(); // TODO: 去重 同一个颜色不能被标记喜欢多次
+    // debugPrint(favoriteColors.toString());
+    Navigator.pop(context); // 先关闭dialog再push
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FavoritePage(favoriteColors: favoriteColors),
+      ),
+    );
+  }
+
+  /// 点击树枝 -> 弹出菜单dialog
   void _handleTapBranch() {
-    debugPrint('click image');
+    bool isFavorite;
+    if (allFavorite.contains(nipponColor.id.toString()))
+      isFavorite = true; // 当isFavorite为true显示“取消喜欢”
+    else
+      isFavorite = false; // 当isFavorite为false显示“标记喜欢”
     showCupertinoDialog(
       context: context,
       builder: (context) => CupertinoAlertDialog(
-        actions: <Widget>[
-          CupertinoDialogAction(
-            child: const Text('🌟标记喜欢', style: TextStyle(color: Colors.black)),
-            onPressed: () {
-              Navigator.pop(context, 'Cheesecake');
-            },
+            actions: <Widget>[
+              isFavorite
+                  ? CupertinoDialogAction(
+                      child: Text(
+                        '😪取消喜欢',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      onPressed: _cancelFavorite,
+                    )
+                  : CupertinoDialogAction(
+                      child: Text(
+                        '🌟标记喜欢',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                      onPressed: _markAsFavorite,
+                    ),
+              CupertinoDialogAction(
+                child: Text('🌠我喜欢的', style: TextStyle(color: Colors.black)),
+                onPressed: _getMyFavorite,
+              ),
+              CupertinoDialogAction(
+                child: Text('📲生成图片', style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              CupertinoDialogAction(
+                child: Text('❓使用提示', style: TextStyle(color: Colors.black)),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+              CupertinoDialogAction(
+                child: const Text('返回'),
+                isDefaultAction: true,
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
           ),
-          CupertinoDialogAction(
-            child: const Text('🌠我喜欢的', style: TextStyle(color: Colors.black)),
-            onPressed: () {
-              Navigator.pop(context, 'Cheesecake');
-            },
-          ),
-          CupertinoDialogAction(
-            child: const Text('📲生成图片', style: TextStyle(color: Colors.black)),
-            onPressed: () {
-              Navigator.pop(context, 'Cheesecake');
-            },
-          ),
-          CupertinoDialogAction(
-            child: const Text('❓使用提示', style: TextStyle(color: Colors.black)),
-            onPressed: () {
-              Navigator.pop(context, 'Cheesecake');
-            },
-          ),
-        ],
-      ),
     );
   }
 
