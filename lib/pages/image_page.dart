@@ -16,6 +16,7 @@ class _ImageSelector extends StatelessWidget {
 
   const _ImageSelector({this.images, this.nipponColor});
 
+  /// 点击帮助按钮
   void _onTapHelp(BuildContext context) {
     showDialog(
       context: context,
@@ -55,7 +56,6 @@ class _ImageSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final TabController controller = DefaultTabController.of(context);
-    print('page: ${controller.index}');
     return Column(
       children: <Widget>[
         // 图片预览
@@ -69,15 +69,18 @@ class _ImageSelector extends StatelessWidget {
               children: images.map<Widget>((image) {
                 return Align(
                   alignment: Alignment.bottomCenter,
-                  child: Card(
-                    color: nipponColor.color,
-                    child: Container(
-                      margin: EdgeInsets.all(6),
-                      child: image,
-                    ),
-                    margin: EdgeInsets.only(bottom: 12.0),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12.0),
+                  child: Opacity(
+                    opacity: 0.70, // 设置图片透明度
+                    child: Card(
+                      color: nipponColor.color,
+                      child: Container(
+                        margin: EdgeInsets.all(6),
+                        child: image,
+                      ),
+                      margin: EdgeInsets.only(bottom: 12.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
                     ),
                   ),
                 );
@@ -97,7 +100,18 @@ class _ImageSelector extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              Icon(Icons.tag_faces),
+              GestureDetector(
+                child: Container(
+                  width: 30,
+                  margin: EdgeInsets.only(left: 6),
+                  child: Image.asset(
+                    'assets/images/1024PNG.png', // 树枝图片
+                    fit: BoxFit.fitWidth,
+                    color: nipponColor.color,
+                  ),
+                ),
+                onTap: () => Navigator.pop(context),
+              ),
               Row(
                 children: <Widget>[
                   // 使用帮助
@@ -115,6 +129,7 @@ class _ImageSelector extends StatelessWidget {
                   // 分享
                   GestureDetector(
                     child: Icon(Icons.share, color: nipponColor.color),
+                    // TODO: onTap
                   ),
                   SizedBox(width: 6),
                 ],
@@ -177,8 +192,18 @@ class ImagePage extends StatelessWidget {
         // 分页
         length: images.length,
         child: Container(
-          color: nipponColor.color.withOpacity(0.28), // 背景透明度
-          child: _ImageSelector(images: images, nipponColor: nipponColor),
+          decoration: BoxDecoration(
+            // color: nipponColor.color.withOpacity(0.28), // 背景透明度
+            image: DecorationImage(
+              image: AssetImage('assets/images/1024PNG.png'),
+              colorFilter: ColorFilter.mode(Colors.white10, BlendMode.dstATop),
+              fit: BoxFit.cover,
+            ),
+          ),
+          child: Container(
+            color: nipponColor.color.withOpacity(0.28), // 背景透明度
+            child: _ImageSelector(images: images, nipponColor: nipponColor),
+          ),
         ),
       ),
     );
