@@ -16,10 +16,39 @@ class _ImageSelector extends StatelessWidget {
 
   const _ImageSelector({this.images, this.nipponColor});
 
+  void _onTapHelp(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+            title: Text(
+              '使用提示',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text('· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('好的', style: TextStyle(color: nipponColor.color)),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+    );
+  }
+
   /// 点击保存按钮
-  void _onTapSave(int index) async {
+  void _onTapSave(BuildContext context, int index) async {
     final Uint8List imgBytes = await images[index].toImage(); // 生成相应图片
     await ImagePickerSaver.saveFile(fileData: imgBytes); // 保存到相册
+    Scaffold.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '图片已保存到相册',
+          style: TextStyle(color: createColorStyle(nipponColor.isLight())),
+        ),
+        backgroundColor: nipponColor.color,
+      ),
+    );
   }
 
   @override
@@ -74,12 +103,13 @@ class _ImageSelector extends StatelessWidget {
                   // 使用帮助
                   GestureDetector(
                     child: Icon(Icons.help, color: nipponColor.color),
+                    onTap: () => _onTapHelp(context),
                   ),
                   SizedBox(width: 6),
                   // 保存图片
                   GestureDetector(
                     child: Icon(Icons.archive, color: nipponColor.color),
-                    onTap: () => _onTapSave(controller.index),
+                    onTap: () => _onTapSave(context, controller.index),
                   ),
                   SizedBox(width: 6),
                   // 分享
@@ -143,7 +173,8 @@ class ImagePage extends StatelessWidget {
     ];
     return Scaffold(
       backgroundColor: Colors.white,
-      body: DefaultTabController( // 分页
+      body: DefaultTabController(
+        // 分页
         length: images.length,
         child: Container(
           color: nipponColor.color.withOpacity(0.28), // 背景透明度
@@ -177,7 +208,7 @@ class GenerateImage extends StatelessWidget {
     double nameDistance;
 
     if (isNameCenter && showChart)
-      nameDistance = newHeight * 0.3;
+      nameDistance = newHeight * 0.38;
     else if (isNameCenter && !showChart)
       nameDistance = newHeight * 0.53;
     else
@@ -206,7 +237,6 @@ class GenerateImage extends StatelessWidget {
                       ? ColorNameContainer(
                           color: nipponColor, ratio: scaleRatio)
                       : SizedBox(), // 颜色名称
-                  // SizedBox(width: newWidth * 0.05),
                 ],
               ),
             ),
@@ -254,7 +284,8 @@ class GenerateImage extends StatelessWidget {
 
   Future<Uint8List> toImage() async {
     RenderRepaintBoundary boundary = key.currentContext.findRenderObject();
-    ui.Image image = await boundary.toImage(pixelRatio: 4.285); // 将screenshot放大到手机屏幕尺寸
+    ui.Image image =
+        await boundary.toImage(pixelRatio: 4.285); // 将screenshot放大到手机屏幕尺寸
     ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     return byteData.buffer.asUint8List();
   }
