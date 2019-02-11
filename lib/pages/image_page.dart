@@ -1,25 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
+import 'dart:typed_data';
+import 'package:image_picker_saver/image_picker_saver.dart';
 
 import '../models/nippon_color.dart';
 import '../utils/utils.dart';
 import '../widgets/color_name.dart';
 import '../widgets/color_chart.dart';
-import 'home_page.dart';
 
+/// 图片分页预览
 class _ImageSelector extends StatelessWidget {
-  final List<Widget> images;
+  final List<GenerateImage> images; // 生成图片列表
   final NipponColor nipponColor;
 
   const _ImageSelector({this.images, this.nipponColor});
+
+  /// 点击保存按钮
+  void _onTapSave() async {
+    final Uint8List imgBytes = await images[0].toImage(); // 生成图片
+    await ImagePickerSaver.saveFile(fileData: imgBytes); // 保存到相册
+  }
 
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final TabController controller = DefaultTabController.of(context);
+
     return Column(
       children: <Widget>[
+        // 图片预览
         Expanded(
           child: IconTheme(
             data: IconThemeData(
@@ -30,12 +40,15 @@ class _ImageSelector extends StatelessWidget {
               children: images.map<Widget>((image) {
                 return Align(
                   alignment: Alignment.bottomCenter,
-                  child: Container(
-                    margin: EdgeInsets.only(top: 36),
-                    padding: EdgeInsets.only(bottom: 18),
-                    child: Card(
-                      color: nipponColor.color,
+                  child: Card(
+                    color: nipponColor.color,
+                    child: Container(
+                      margin: EdgeInsets.all(6),
                       child: image,
+                    ),
+                    margin: EdgeInsets.only(bottom: 12.0),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.0),
                     ),
                   ),
                 );
@@ -43,13 +56,15 @@ class _ImageSelector extends StatelessWidget {
             ),
           ),
         ),
+        // 分页条
         TabPageSelector(
           controller: controller,
           indicatorSize: 8.0,
           selectedColor: nipponColor.color,
         ),
+        // 底部图标
         Container(
-          padding: EdgeInsets.only(top: screenSize.height * 0.15, bottom: 8),
+          padding: EdgeInsets.only(top: screenSize.height * 0.1, bottom: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
@@ -64,7 +79,7 @@ class _ImageSelector extends StatelessWidget {
                   // 保存图片
                   GestureDetector(
                     child: Icon(Icons.archive, color: nipponColor.color),
-                    // onTap: () => images[0].,
+                    onTap: _onTapSave,
                   ),
                   SizedBox(width: 6),
                   // 分享
@@ -77,15 +92,12 @@ class _ImageSelector extends StatelessWidget {
             ],
           ),
         ),
-        // RaisedButton(
-        //   child: Text('image'),
-        //   onPressed: () => image.toImage(),
-        // ),
       ],
     );
   }
 }
 
+/// 预览生成图片页面
 class ImagePage extends StatelessWidget {
   final NipponColor nipponColor;
   ImagePage(this.nipponColor);
@@ -93,30 +105,35 @@ class ImagePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<GenerateImage> images = [
+      // 带颜色名（靠上）和颜色值
       GenerateImage(
         nipponColor: this.nipponColor,
         showName: true,
         showChart: true,
         isNameCenter: false,
       ),
+      // 带颜色名 不带颜色值
       GenerateImage(
         nipponColor: this.nipponColor,
         showName: true,
         showChart: false,
         isNameCenter: false,
       ),
+      // 带颜色名（靠中）和颜色值
       GenerateImage(
         nipponColor: this.nipponColor,
         showName: true,
         showChart: true,
         isNameCenter: true,
       ),
+      // 带颜色名 不带颜色值
       GenerateImage(
         nipponColor: this.nipponColor,
         showName: true,
         showChart: false,
         isNameCenter: true,
       ),
+      // 不带颜色名 不带颜色值
       GenerateImage(
         nipponColor: this.nipponColor,
         showName: false,
@@ -126,10 +143,10 @@ class ImagePage extends StatelessWidget {
     ];
     return Scaffold(
       backgroundColor: Colors.white,
-      body: DefaultTabController(
+      body: DefaultTabController( // 分页
         length: images.length,
         child: Container(
-          color: nipponColor.color.withOpacity(0.25),
+          color: nipponColor.color.withOpacity(0.28), // 背景透明度
           child: _ImageSelector(images: images, nipponColor: nipponColor),
         ),
       ),
@@ -137,6 +154,7 @@ class ImagePage extends StatelessWidget {
   }
 }
 
+/// 生成的图片
 class GenerateImage extends StatelessWidget {
   final NipponColor nipponColor;
   final bool showName;
@@ -153,95 +171,91 @@ class GenerateImage extends StatelessWidget {
     key = GlobalKey();
     final Size screenSize = MediaQuery.of(context).size;
     final double scaleRatio = 0.7;
-    final double newWidth = screenSize.width * scaleRatio;
     final double newHeight = screenSize.height * scaleRatio;
+    final double newWidth = screenSize.width * scaleRatio;
     final double divideH = newWidth * 0.012;
     double nameDistance;
 
-    if (isNameCenter && showChart) nameDistance = newHeight * 0.38;
-    else if (isNameCenter && !showChart) nameDistance = newHeight * 0.53;
-    else nameDistance = newHeight * 0.15;
+    if (isNameCenter && showChart)
+      nameDistance = newHeight * 0.3;
+    else if (isNameCenter && !showChart)
+      nameDistance = newHeight * 0.53;
+    else
+      nameDistance = newHeight * 0.15;
 
     return RepaintBoundary(
       key: key,
-      child: Card(
-        elevation: 0.0,
-        child: Container(
-          width: newWidth,
-          height: newHeight,
-          color: nipponColor.color,
-          child: Stack(
-            children: <Widget>[
-              isNameCenter
-                  ? SizedBox(height: newHeight * 0.47)
-                  : SizedBox(height: newHeight * 0.15),
-              Positioned(
-                top: nameDistance,
-                right: newWidth * 0.05,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[
-                    showName
-                        ? ColorNameContainer(
-                            color: nipponColor, ratio: scaleRatio)
-                        : SizedBox(), // 颜色名称
-                    // SizedBox(width: newWidth * 0.05),
-                  ],
-                ),
+      child: Container(
+        width: newWidth,
+        height: newHeight,
+        color: nipponColor.color,
+        margin: EdgeInsets.all(0),
+        padding: EdgeInsets.all(0),
+        child: Stack(
+          children: <Widget>[
+            isNameCenter
+                ? SizedBox(height: newHeight * 0.47)
+                : SizedBox(height: newHeight * 0.15),
+            Positioned(
+              top: nameDistance,
+              right: newWidth * 0.05,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: <Widget>[
+                  showName
+                      ? ColorNameContainer(
+                          color: nipponColor, ratio: scaleRatio)
+                      : SizedBox(), // 颜色名称
+                  // SizedBox(width: newWidth * 0.05),
+                ],
               ),
-              Positioned(
-                child: showChart
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Container(
-                            width: 30 * scaleRatio,
-                            child: Image.asset(
-                              'assets/images/branch.png', // 树枝图片
-                              fit: BoxFit.fitWidth,
+            ),
+            Positioned(
+              child: showChart
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Container(
+                          width: 30 * scaleRatio,
+                          child: Image.asset(
+                            'assets/images/branch.png', // 树枝图片
+                            fit: BoxFit.fitWidth,
+                            color: createColorStyle(nipponColor.isLight()),
+                          ),
+                        ),
+                        SizedBox(height: divideH),
+                        RGBCircularChart(color: nipponColor, ratio: scaleRatio),
+                        SizedBox(height: divideH),
+                        CMYKCircularChart(
+                            color: nipponColor, ratio: scaleRatio),
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 10 * scaleRatio,
+                              horizontal: 10 * scaleRatio),
+                          child: Text(
+                            '#${nipponColor.hex}',
+                            style: TextStyle(
                               color: createColorStyle(nipponColor.isLight()),
+                              fontSize: 16 * scaleRatio,
+                              fontWeight: FontWeight.w300,
                             ),
                           ),
-                          SizedBox(height: divideH),
-                          RGBCircularChart(
-                              color: nipponColor, ratio: scaleRatio),
-                          SizedBox(height: divideH),
-                          CMYKCircularChart(
-                              color: nipponColor, ratio: scaleRatio),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                                vertical: 10 * scaleRatio,
-                                horizontal: 10 * scaleRatio),
-                            child: Text(
-                              '#${nipponColor.hex}',
-                              style: TextStyle(
-                                color: createColorStyle(nipponColor.isLight()),
-                                fontSize: 16 * scaleRatio,
-                                fontWeight: FontWeight.w300,
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : SizedBox(),
-              ),
-            ],
-          ),
+                        ),
+                      ],
+                    )
+                  : SizedBox(),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  toImage() async {
-    try {
-      RenderRepaintBoundary boundary = key.currentContext.findRenderObject();
-      var image = await boundary.toImage();
-      var byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      var pngBytes = byteData.buffer.asUint8List();
-      print(pngBytes);
-    } catch (e) {
-      print(e);
-    }
+  Future<Uint8List> toImage() async {
+    RenderRepaintBoundary boundary = key.currentContext.findRenderObject();
+    ui.Image image = await boundary.toImage(pixelRatio: 4.285); // 将screenshot放大到手机屏幕尺寸
+    ByteData byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    return byteData.buffer.asUint8List();
   }
 }
