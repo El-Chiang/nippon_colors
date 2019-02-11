@@ -17,8 +17,8 @@ class _ImageSelector extends StatelessWidget {
   const _ImageSelector({this.images, this.nipponColor});
 
   /// 点击保存按钮
-  void _onTapSave() async {
-    final Uint8List imgBytes = await images[0].toImage(); // 生成图片
+  void _onTapSave(int index) async {
+    final Uint8List imgBytes = await images[index].toImage(); // 生成相应图片
     await ImagePickerSaver.saveFile(fileData: imgBytes); // 保存到相册
   }
 
@@ -26,7 +26,7 @@ class _ImageSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final TabController controller = DefaultTabController.of(context);
-
+    print('page: ${controller.index}');
     return Column(
       children: <Widget>[
         // 图片预览
@@ -79,7 +79,7 @@ class _ImageSelector extends StatelessWidget {
                   // 保存图片
                   GestureDetector(
                     child: Icon(Icons.archive, color: nipponColor.color),
-                    onTap: _onTapSave,
+                    onTap: () => _onTapSave(controller.index),
                   ),
                   SizedBox(width: 6),
                   // 分享
