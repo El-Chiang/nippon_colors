@@ -106,6 +106,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 点击“生成图片”事件
   void _goToImagePage() {
     Navigator.pop(context);
     Navigator.push(
@@ -113,6 +114,28 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (context) => ImagePage(nipponColor),
       ),
+    );
+  }
+
+  /// 点击“使用提示”事件
+  void _getHelp() {
+    Navigator.pop(context);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+            title: Text(
+              '使用提示',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            content: Text('· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作'),
+            actions: <Widget>[
+              FlatButton(
+                child: Text('好的', style: TextStyle(color: nipponColor.color)),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
     );
   }
 
@@ -126,7 +149,8 @@ class _HomePageState extends State<HomePage> {
       isFavorite = false; // 当isFavorite为false显示“标记喜欢”
     showCupertinoDialog(
       context: context,
-      builder: (context) { // 当用户没有任何喜欢颜色时隐藏“我喜欢的”入口
+      builder: (context) {
+        // 当用户没有任何喜欢颜色时隐藏“我喜欢的”入口
         if (allFavorite.length == 0) {
           return CupertinoAlertDialog(
             actions: <Widget>[
@@ -151,9 +175,7 @@ class _HomePageState extends State<HomePage> {
               ),
               CupertinoDialogAction(
                 child: Text('❓使用提示', style: TextStyle(color: Colors.black)),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: _getHelp,
               ),
               CupertinoDialogAction(
                 child: const Text('返回'),
@@ -192,9 +214,7 @@ class _HomePageState extends State<HomePage> {
               ),
               CupertinoDialogAction(
                 child: Text('❓使用提示', style: TextStyle(color: Colors.black)),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+                onPressed: _getHelp,
               ),
               CupertinoDialogAction(
                 child: const Text('返回'),
@@ -221,6 +241,7 @@ class _HomePageState extends State<HomePage> {
         body: Column(
           children: <Widget>[
             SizedBox(height: screenSize.height * 0.15), // 颜色名称离屏幕上边框的距离
+            // 颜色名行
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
@@ -231,16 +252,18 @@ class _HomePageState extends State<HomePage> {
                 SizedBox(width: screenSize.width * 0.05), // 颜色名称离屏幕右边框的距离
               ],
             ),
+            // 树枝 RGB值 CMYK值 Hex值
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
+                  // 树枝图片
                   GestureDetector(
                     child: Container(
                       width: 30,
                       child: Image.asset(
-                        'assets/images/branch.png', // 树枝图片
+                        'assets/images/branch.png',
                         fit: BoxFit.fitWidth,
                         color: createColorStyle(nipponColor.isLight()),
                       ),
@@ -248,11 +271,13 @@ class _HomePageState extends State<HomePage> {
                     onTap: _handleTapBranch,
                   ),
                   SizedBox(height: divideH),
-                  RGBCircularChart(color: nipponColor), // RGB环状图
+                  // RGB环状图
+                  RGBCircularChart(color: nipponColor),
                   SizedBox(height: divideH),
-                  CMYKCircularChart(color: nipponColor), // CMYK环状图
+                  // CMYK环状图
+                  CMYKCircularChart(color: nipponColor),
+                  // Hex值
                   Container(
-                    // Hex值
                     padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
                     child: Text(
                       '#${nipponColor.hex}',
