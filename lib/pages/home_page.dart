@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:math';
+import 'package:swipedetector/swipedetector.dart';
 
 import '../utils/utils.dart';
 import '../actions/event_actions.dart';
@@ -238,22 +239,19 @@ class _HomePageState extends State<HomePage> {
       onTap: _handleTapScreen,
       child: Scaffold(
         backgroundColor: nipponColor.color,
-        body: Column(
+        body: Stack(
           children: <Widget>[
-            SizedBox(height: screenSize.height * 0.15), // 颜色名称离屏幕上边框的距离
             // 颜色名行
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: <Widget>[
-                GestureDetector(
-                  child: ColorNameContainer(color: nipponColor), // 颜色名称
-                  onTap: _handleTapName,
-                ),
-                SizedBox(width: screenSize.width * 0.05), // 颜色名称离屏幕右边框的距离
-              ],
+            Positioned(
+              top: screenSize.height * 0.15, // 颜色名称离屏幕上边框的距离
+              right: screenSize.width * 0.05, // 颜色名称离屏幕右边框的距离
+              child: GestureDetector(
+                child: ColorNameContainer(color: nipponColor), // 颜色名称
+                onTap: _handleTapName,
+              ),
             ),
             // 树枝 RGB值 CMYK值 Hex值
-            Expanded(
+            Positioned(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
