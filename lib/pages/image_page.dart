@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 import 'package:image_picker_saver/image_picker_saver.dart';
+import 'package:esys_flutter_share/esys_flutter_share.dart';
 
 import '../models/nippon_color.dart';
 import '../utils/utils.dart';
@@ -50,6 +51,14 @@ class _ImageSelector extends StatelessWidget {
         backgroundColor: nipponColor.color,
       ),
     );
+  }
+
+  /// 点击分享按钮
+  void _onTapShare(int index) async {
+    final Uint8List imgBytes = await images[index].toImage(); // 生成相应图片
+    final ByteBuffer buffer = imgBytes.buffer;
+    final ByteData bytes = ByteData.view(buffer); // 转换成Bytes
+    await EsysFlutterShare.shareImage('${nipponColor.name}.png', bytes, '分享图片');
   }
 
   @override
@@ -129,7 +138,7 @@ class _ImageSelector extends StatelessWidget {
                   // 分享
                   GestureDetector(
                     child: Icon(Icons.share, color: nipponColor.color),
-                    // TODO: onTap
+                    onTap: () => _onTapShare(controller.index),
                   ),
                   SizedBox(width: 6),
                 ],

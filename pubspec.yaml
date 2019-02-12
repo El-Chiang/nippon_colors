@@ -10,13 +10,12 @@ dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^0.1.2
-
   swipedetector: ^1.2.0
   flutter_circular_chart: ^0.1.0
   event_bus: ^1.0.1
   shared_preferences: ^0.4.1
   image_picker_saver: ^0.1.0
+  esys_flutter_share: ^0.0.8
 
 
 dev_dependencies:

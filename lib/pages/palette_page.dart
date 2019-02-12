@@ -5,7 +5,7 @@ import '../models/nippon_color.dart';
 import '../widgets/color_name.dart';
 import '../actions/event_actions.dart';
 
-// 颜色条
+/// 颜色条
 class ColorItem extends StatelessWidget {
   final NipponColor nipponColor;
 
@@ -24,21 +24,15 @@ class ColorItem extends StatelessWidget {
     return GestureDetector(
       onTap: handleTapItem,
       child: Container(
+        child: ColorNameContainer(color: nipponColor),
+        padding: EdgeInsets.only(right: screenSize.width * 0.05),
         color: nipponColor.color,
-        padding: EdgeInsets.symmetric(vertical: 20),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: <Widget>[
-            ColorNameContainer(color: nipponColor),
-            SizedBox(width: screenSize.width * 0.05),
-          ],
-        ),
       ),
     );
   }
 }
 
-// 调色板页面
+/// 调色板页面
 class PalettePage extends StatefulWidget {
   final List<Map<String, dynamic>> colors;
   final int index;
@@ -51,10 +45,12 @@ class PalettePage extends StatefulWidget {
   State<StatefulWidget> createState() => _PaletteState();
 }
 
+/// 调色板状态
 class _PaletteState extends State<PalettePage> {
   ScrollController _controller; // 滚动控制
   bool _isVisibled; // ColorBar是否可见
   int _index;
+  static const double kItemExtent = 120;
 
   _scrollListener() {
     // 向上滚动可见
@@ -73,7 +69,7 @@ class _PaletteState extends State<PalettePage> {
     _isVisibled = false; // 初始化ColorBar是否可见
     // 初始化滚动控制器并添加滚动监听
     _controller = ScrollController(
-      initialScrollOffset: 110.0 * (widget.index - 3),
+      initialScrollOffset: kItemExtent * (widget.index - 3),
     );
     _controller.addListener(_scrollListener);
     super.initState();
@@ -96,7 +92,7 @@ class _PaletteState extends State<PalettePage> {
     return Scaffold(
       body: ListView.builder(
         controller: _controller,
-        itemExtent: 110,
+        itemExtent: kItemExtent,
         itemCount: colors.length - 1,
         itemBuilder: (context, index) {
           NipponColor color = NipponColor.fromMap(colors[index]);
@@ -133,22 +129,26 @@ class _PaletteState extends State<PalettePage> {
                       onPanStart: (DragStartDetails details) {
                         double nowPosition = details.globalPosition.dx;
                         double distance = nowPosition - screenWidth * 0.4 + 10;
-                        int index = (distance / (screenWidth * 0.6) * 451).round();
+                        int index =
+                            (distance / (screenWidth * 0.6) * 451).round();
                         _controller.animateTo(
-                          110.0 * (index - 3),
+                          kItemExtent * (index - 3),
                           curve: Curves.linear,
-                          duration: Duration(milliseconds: 200 + (index - _index).abs()),
+                          duration: Duration(
+                              milliseconds: 200 + (index - _index).abs()),
                         );
                         setState(() => _index = index);
                       },
                       onPanUpdate: (DragUpdateDetails details) {
                         double nowPosition = details.globalPosition.dx;
                         double distance = nowPosition - screenWidth * 0.4 + 10;
-                        int index = (distance / (screenWidth * 0.6) * 451).round();
+                        int index =
+                            (distance / (screenWidth * 0.6) * 451).round();
                         _controller.animateTo(
-                          110.0 * (index - 3),
+                          kItemExtent * (index - 3),
                           curve: Curves.linear,
-                          duration: Duration(milliseconds: 200 + (index - _index).abs()),
+                          duration: Duration(
+                              milliseconds: 200 + (index - _index).abs()),
                         );
                         setState(() => _index = index);
                       },

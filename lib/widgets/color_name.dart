@@ -29,6 +29,7 @@ class _ColorNameState extends State<ColorNameContainer> {
     final textStyle = TextStyle(color: createColorStyle(nipponColor.isLight()));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Text(
           cname,
