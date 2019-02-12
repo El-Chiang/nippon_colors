@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'dart:math';
-import 'package:swipedetector/swipedetector.dart';
 
 import '../utils/utils.dart';
 import '../actions/event_actions.dart';
@@ -28,6 +27,8 @@ class _HomePageState extends State<HomePage> {
   int colorCount;
   int colorIndex;
   NipponColor nipponColor;
+  bool _isChartVisibled;
+  bool _isBranchVisibled;
 
   /// 初始化状态并绑定监听事件
   void initState() {
@@ -39,6 +40,8 @@ class _HomePageState extends State<HomePage> {
         allFavorite = widget.myFavorite;
         colorIndex = Random().nextInt(colorCount - 1); // 随机产生一个颜色编号
         nipponColor = NipponColor.fromMap(colors[colorIndex]); // 实例化NipponColor
+        _isChartVisibled = false;
+        _isBranchVisibled = false;
       });
     }
     // 当颜色改变时更新状态
@@ -236,7 +239,39 @@ class _HomePageState extends State<HomePage> {
     final Size screenSize = MediaQuery.of(context).size;
     final double divideH = screenSize.width * 0.012;
     return GestureDetector(
+      // 点击屏幕
       onTap: _handleTapScreen,
+      // 垂直滑动
+      onVerticalDragEnd: (DragEndDetails details) {
+        double nowPosition = details.primaryVelocity;
+        print(nowPosition);
+        if (nowPosition < 0) {
+          // 上滑可见
+          print('upup');
+          setState(() => _isChartVisibled = true);
+          Future.delayed(const Duration(milliseconds: 300), () {
+            setState(() => _isBranchVisibled = true);
+          });
+        }
+        if (nowPosition > 0) {
+          // 下滑隐藏
+          print('down');
+          setState(() {
+            _isChartVisibled = false;
+            _isBranchVisibled = false;
+          });
+        }
+      },
+      // 水平滑动
+      onHorizontalDragEnd: (DragEndDetails details) {
+        double nowPosition = details.primaryVelocity;
+        print(nowPosition);
+        if (nowPosition < 0) // 左滑
+          print('left');
+        if (nowPosition > 0) // 右滑
+          print('right');
+      },
+
       child: Scaffold(
         backgroundColor: nipponColor.color,
         body: Stack(
@@ -251,22 +286,28 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             // 树枝 RGB值 CMYK值 Hex值
-            Positioned(
+            AnimatedPositioned(
+              duration: Duration(milliseconds: 300),
+              bottom: _isChartVisibled ? 0 : -screenSize.height * 0.65,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   // 树枝图片
-                  GestureDetector(
-                    child: Container(
-                      width: 30,
-                      child: Image.asset(
-                        'assets/images/branch.png',
-                        fit: BoxFit.fitWidth,
-                        color: createColorStyle(nipponColor.isLight()),
+                  AnimatedOpacity(
+                    duration: Duration(milliseconds: 500),
+                    opacity: _isBranchVisibled ? 1 : 0.0,
+                    child: GestureDetector(
+                      child: Container(
+                        width: 30,
+                        child: Image.asset(
+                          'assets/images/branch.png',
+                          fit: BoxFit.fitWidth,
+                          color: createColorStyle(nipponColor.isLight()),
+                        ),
                       ),
+                      onTap: _handleTapBranch,
                     ),
-                    onTap: _handleTapBranch,
                   ),
                   SizedBox(height: divideH),
                   // RGB环状图
