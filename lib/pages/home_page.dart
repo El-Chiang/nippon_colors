@@ -124,18 +124,15 @@ class _HomePageState extends State<HomePage> {
   /// 点击“使用提示”事件
   void _getHelp() {
     Navigator.pop(context);
-    showDialog(
+    showCupertinoDialog(
       context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '使用提示',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+      builder: (context) => CupertinoAlertDialog(
+            title: Text('使用提示'),
             content: Text('· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作'),
             actions: <Widget>[
-              FlatButton(
+              CupertinoDialogAction(
                 child: Text('好的', style: TextStyle(color: nipponColor.color)),
+                isDefaultAction: true,
                 onPressed: () => Navigator.pop(context),
               ),
             ],
