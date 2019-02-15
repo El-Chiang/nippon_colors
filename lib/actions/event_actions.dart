@@ -5,7 +5,7 @@ EventBus eventBus = EventBus();
 
 // 点击屏幕时更新颜色
 class UpdateColorEvent {
-  int updatedIndex;
+  int updatedIndex; // index为在list中的索引 而不是color的id
   NipponColor updatedColor;
 
   UpdateColorEvent(this.updatedIndex, this.updatedColor);

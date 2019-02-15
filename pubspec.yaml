@@ -15,6 +15,7 @@ dependencies:
   shared_preferences: ^0.4.1
   image_picker_saver: ^0.1.0
   esys_flutter_share: ^0.0.8
+  sensors: ^0.4.0+1
 
 
 dev_dependencies:

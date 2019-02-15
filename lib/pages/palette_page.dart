@@ -16,7 +16,6 @@ class ColorItem extends StatelessWidget {
     final Size screenSize = MediaQuery.of(context).size;
     // 点击相应颜色
     void handleTapItem() {
-      debugPrint('tap item ${nipponColor.cname}');
       eventBus.fire(UpdateColorEvent(nipponColor.id - 1, nipponColor));
       Navigator.pop(context);
     }

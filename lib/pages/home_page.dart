@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'dart:math';
+import 'dart:async';
+import 'package:sensors/sensors.dart';
 
 import '../utils/utils.dart';
 import '../actions/event_actions.dart';
@@ -11,6 +13,7 @@ import '../widgets/color_name.dart';
 import 'palette_page.dart';
 import 'favorite_page.dart';
 import 'image_page.dart';
+
 
 class HomePage extends StatefulWidget {
   final NipponColor color;
@@ -27,9 +30,11 @@ class _HomePageState extends State<HomePage> {
   List<String> allFavorite; // 所有用户喜欢的颜色
   int colorCount;
   int colorIndex;
-  NipponColor nipponColor;
-  bool _isChartVisibled;
-  bool _isBranchVisibled;
+  NipponColor nipponColor, prevColor;
+  bool _isChartVisibled; // Chart是否可见
+  bool _isBranchVisibled; // 树枝是否可见
+  bool _isShake; // 是否摇动设备
+  StreamSubscription shakeSubscription;
 
   /// 初始化状态并绑定监听事件
   void initState() {
@@ -43,6 +48,7 @@ class _HomePageState extends State<HomePage> {
         nipponColor = NipponColor.fromMap(colors[colorIndex]); // 实例化NipponColor
         _isChartVisibled = false;
         _isBranchVisibled = false;
+        _isShake = false;
       });
     }
     // 当颜色改变时更新状态
@@ -62,10 +68,23 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  /// 移除掉时取消监听
+  void deactivate() {
+    super.deactivate();
+    shakeSubscription.cancel();
+  }
+
+  /// 跳转到上一个颜色
+  void _goToPrevColor() {
+    Navigator.pop(context);
+    eventBus.fire(UpdateColorEvent(prevColor.id - 1, prevColor));
+  }
+
   /// 点击屏幕事件 -> 随机产生一个新的颜色
   void _handleTapScreen() {
     final int newIndex = Random().nextInt(colorCount - 1);
     final newColor = NipponColor.fromMap(colors[newIndex]);
+    setState(() => prevColor = nipponColor); // 将当前颜色保存到prevColor
     eventBus.fire(UpdateColorEvent(newIndex, newColor));
   }
 
@@ -128,16 +147,29 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) => CupertinoAlertDialog(
             title: Text('使用提示'),
-            content: Text('· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作\n· 长按十六进制值可复制'),
+            content: Text(
+              '· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作\n· 长按十六进制值可复制'),
             actions: <Widget>[
               CupertinoDialogAction(
-                child: Text('好的'),
+                child: Text('好的', style: TextStyle(color: _getFontColor()),),
                 isDefaultAction: true,
                 onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
     );
+  }
+
+  /// 根据Color得到字体颜色
+  Color _getFontColor() {
+    List<int> oldRGB = nipponColor.getRGB();
+    if (nipponColor.isLight()) {
+      List<int> newRGB = oldRGB.map((data) => (data * 0.6).round()).toList(); // 将RGB等比例减小
+      Color color = Color.fromARGB(255, newRGB[0], newRGB[1], newRGB[2]);
+      return color;
+    } else {
+      return nipponColor.color;
+    }
   }
 
   /// 点击树枝 -> 弹出菜单dialog
@@ -178,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: _getHelp,
               ),
               CupertinoDialogAction(
-                child: Text('返回'),
+                child: Text('返回', style: TextStyle(color: _getFontColor())),
                 isDefaultAction: true,
                 onPressed: () {
                   Navigator.pop(context);
@@ -217,7 +249,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: _getHelp,
               ),
               CupertinoDialogAction(
-                child: Text('返回'),
+                child: Text('返回', style: TextStyle(color: _getFontColor())),
                 isDefaultAction: true,
                 onPressed: () {
                   Navigator.pop(context);
@@ -230,6 +262,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  /// 长按Hex -> 复制Hex值
   void _handleLongPressHex() {
     Clipboard.setData(ClipboardData(text: '#${nipponColor.hex}'));
   }
@@ -238,6 +271,37 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
     final double divideH = screenSize.width * 0.012;
+
+    // 震动检测
+    shakeSubscription = accelerometerEvents.listen((AccelerometerEvent event) {
+      // 如果检测到摇一摇 且存在上一个颜色
+      if (((event.x > 20) || (event.y > 20) || (event.z > 20)) && !_isShake && (prevColor != null)) {
+        setState(() => _isShake = true);
+        showCupertinoDialog(
+          context: context,
+          builder: (context) => CupertinoAlertDialog(
+            title: Text('撤销操作'),
+            actions: <Widget>[
+              CupertinoDialogAction(
+                child: Text('上一个颜色', style: TextStyle(color: _getFontColor()),),
+                onPressed: _goToPrevColor,
+              ),
+              CupertinoDialogAction(
+                child: Text('取消', style: TextStyle(color: _getFontColor()),),
+                onPressed: () => Navigator.pop(context),
+                isDefaultAction: true,
+              ),
+            ],
+          ),
+        );
+        // 这里设置等待4秒是为了给shake加一个延迟
+        Future.delayed(const Duration(seconds: 4), () {
+          setState(() => _isShake = false);
+        });
+      }
+    });
+    shakeSubscription.resume();
+
     return GestureDetector(
       // 点击屏幕
       onTap: _handleTapScreen,
