@@ -95,6 +95,7 @@ class _HomePageState extends State<HomePage> {
 
   /// 点击颜色名称事件 -> 跳转到调色板界面显示所有颜色
   void _handleTapName() {
+    shakeSubscription.pause();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
@@ -283,30 +284,28 @@ class _HomePageState extends State<HomePage> {
     // 震动检测
     shakeSubscription = accelerometerEvents.listen((AccelerometerEvent event) {
       // 如果检测到摇一摇 且存在上一个颜色
-      if (((event.x > 20) || (event.y > 20) || (event.z > 20)) &&
-          !_isShake &&
-          (prevColor != null)) {
+      if (((event.x > 20) || (event.y > 20) || (event.z > 20)) && !_isShake && (prevColor != null)) {
         setState(() => _isShake = true);
-        showCupertinoDialog(
+        showDialog(
           context: context,
-          builder: (context) => CupertinoAlertDialog(
-                title: Text('撤销操作'),
-                actions: <Widget>[
+          builder: (context) => SimpleDialog(
+                title: Text(MyLocalizations.of(context).undoTitleStr, textAlign: TextAlign.center), // 撤销操作
+                children: <Widget>[
                   CupertinoDialogAction(
-                    child: Text(
-                      '上一个颜色',
-                      style: TextStyle(color: _getFontColor()),
+                      child: Text(
+                        MyLocalizations.of(context).lastColorStr, // 上一个颜色
+                        style: TextStyle(color: _getFontColor()),
+                      ),
+                      onPressed: _goToPrevColor,
                     ),
-                    onPressed: _goToPrevColor,
-                  ),
-                  CupertinoDialogAction(
-                    child: Text(
-                      '取消',
-                      style: TextStyle(color: _getFontColor()),
+                    CupertinoDialogAction(
+                      child: Text(
+                        MyLocalizations.of(context).cancelStr, // 取消
+                        style: TextStyle(color: _getFontColor()),
+                      ),
+                      onPressed: () => Navigator.pop(context),
+                      isDefaultAction: true,
                     ),
-                    onPressed: () => Navigator.pop(context),
-                    isDefaultAction: true,
-                  ),
                 ],
               ),
         );
