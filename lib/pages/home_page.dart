@@ -74,6 +74,11 @@ class _HomePageState extends State<HomePage> {
     shakeSubscription.cancel();
   }
 
+  void dispose() {
+    super.dispose();
+    shakeSubscription.cancel();
+  }
+
   /// 跳转到上一个颜色
   void _goToPrevColor() {
     Navigator.pop(context);
