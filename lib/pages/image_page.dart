@@ -301,7 +301,7 @@ class GenerateImage extends StatelessWidget {
                             '#${nipponColor.hex}',
                             style: TextStyle(
                               color: createColorStyle(nipponColor.isLight()),
-                              fontSize: 16 * scaleRatio,
+                              fontSize: newWidth * 0.05,
                               fontWeight: FontWeight.w300,
                             ),
                           ),

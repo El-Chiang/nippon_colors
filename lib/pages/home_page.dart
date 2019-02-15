@@ -319,7 +319,7 @@ class _HomePageState extends State<HomePage> {
                       '#${nipponColor.hex}',
                       style: TextStyle(
                         color: createColorStyle(nipponColor.isLight()),
-                        fontSize: 16,
+                        fontSize: screenSize.width * 0.05, // hex字体大小为screenWidth * 0.05
                         fontWeight: FontWeight.w300,
                       ),
                     ),
