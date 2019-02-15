@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'dart:math';
 
 import '../utils/utils.dart';
@@ -100,7 +101,6 @@ class _HomePageState extends State<HomePage> {
       int index = int.parse(favoriteId) - 1; // 因为id从1开始所以实际列表中的index要-1
       return NipponColor.fromMap(colors[index]);
     }).toList();
-    debugPrint(favoriteColors.toString());
     Navigator.pop(context); // 先关闭dialog再push
     Navigator.push(
       context,
@@ -128,10 +128,10 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) => CupertinoAlertDialog(
             title: Text('使用提示'),
-            content: Text('· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作'),
+            content: Text('· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作\n· 长按十六进制值可复制'),
             actions: <Widget>[
               CupertinoDialogAction(
-                child: Text('好的', style: TextStyle(color: nipponColor.color)),
+                child: Text('好的'),
                 isDefaultAction: true,
                 onPressed: () => Navigator.pop(context),
               ),
@@ -142,7 +142,6 @@ class _HomePageState extends State<HomePage> {
 
   /// 点击树枝 -> 弹出菜单dialog
   void _handleTapBranch() {
-    debugPrint(allFavorite.length.toString());
     bool isFavorite;
     if (allFavorite.contains(nipponColor.id.toString()))
       isFavorite = true; // 当isFavorite为true显示“取消喜欢”
@@ -179,7 +178,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: _getHelp,
               ),
               CupertinoDialogAction(
-                child: const Text('返回'),
+                child: Text('返回'),
                 isDefaultAction: true,
                 onPressed: () {
                   Navigator.pop(context);
@@ -218,7 +217,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: _getHelp,
               ),
               CupertinoDialogAction(
-                child: const Text('返回'),
+                child: Text('返回'),
                 isDefaultAction: true,
                 onPressed: () {
                   Navigator.pop(context);
@@ -231,6 +230,10 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  void _handleLongPressHex() {
+    Clipboard.setData(ClipboardData(text: '#${nipponColor.hex}'));
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size screenSize = MediaQuery.of(context).size;
@@ -241,10 +244,8 @@ class _HomePageState extends State<HomePage> {
       // 垂直滑动
       onVerticalDragEnd: (DragEndDetails details) {
         double nowPosition = details.primaryVelocity;
-        print(nowPosition);
         if (nowPosition < 0) {
           // 上滑可见
-          print('upup');
           setState(() => _isChartVisibled = true);
           Future.delayed(const Duration(milliseconds: 300), () {
             setState(() => _isBranchVisibled = true);
@@ -252,7 +253,6 @@ class _HomePageState extends State<HomePage> {
         }
         if (nowPosition > 0) {
           // 下滑隐藏
-          print('down');
           setState(() {
             _isChartVisibled = false;
             _isBranchVisibled = false;
@@ -262,7 +262,6 @@ class _HomePageState extends State<HomePage> {
       // 水平滑动
       onHorizontalDragEnd: (DragEndDetails details) {
         double nowPosition = details.primaryVelocity;
-        print(nowPosition);
         if (nowPosition < 0) // 左滑
           print('left');
         if (nowPosition > 0) // 右滑
@@ -313,14 +312,21 @@ class _HomePageState extends State<HomePage> {
                   // CMYK环状图
                   CMYKCircularChart(color: nipponColor),
                   // Hex值
-                  Container(
-                    padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-                    child: Text(
-                      '#${nipponColor.hex}',
-                      style: TextStyle(
-                        color: createColorStyle(nipponColor.isLight()),
-                        fontSize: screenSize.width * 0.05, // hex字体大小为screenWidth * 0.05
-                        fontWeight: FontWeight.w300,
+                  GestureDetector(
+                    onLongPress: _handleLongPressHex,
+                    child: Tooltip(
+                      message: '已复制',
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                        child: Text(
+                          '#${nipponColor.hex}',
+                          style: TextStyle(
+                            color: createColorStyle(nipponColor.isLight()),
+                            fontSize: screenSize.width * 0.05, // hex字体大小为screenWidth * 0.05
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
                       ),
                     ),
                   ),
