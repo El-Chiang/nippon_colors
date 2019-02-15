@@ -8,12 +8,12 @@ import 'package:sensors/sensors.dart';
 import '../utils/utils.dart';
 import '../actions/event_actions.dart';
 import '../models/nippon_color.dart';
+import '../models/localizations.dart';
 import '../widgets/color_chart.dart';
 import '../widgets/color_name.dart';
 import 'palette_page.dart';
 import 'favorite_page.dart';
 import 'image_page.dart';
-
 
 class HomePage extends StatefulWidget {
   final NipponColor color;
@@ -148,19 +148,22 @@ class _HomePageState extends State<HomePage> {
   /// 点击“使用提示”事件
   void _getHelp() {
     Navigator.pop(context);
-    showCupertinoDialog(
+    showDialog(
       context: context,
-      builder: (context) => CupertinoAlertDialog(
-            title: Text('使用提示'),
-            content: Text(
-              '· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作\n· 长按十六进制值可复制'),
-            actions: <Widget>[
+      builder: (context) => SimpleDialog(
+            title: Text(MyLocalizations.of(context).tipsTitleStr, textAlign: TextAlign.center), // 使用提示
+            // 首页点击颜色名称，显示所有颜色
+            // 手误误点屏幕时，“摇一摇设备”撤销操作
+            // 长按十六进制值可复制
+            children: <Widget>[
+              Text('· ${MyLocalizations.of(context).tipStr1}\n· ${MyLocalizations.of(context).tipStr2}\n· ${MyLocalizations.of(context).tipStr3}'),
               CupertinoDialogAction(
-                child: Text('好的', style: TextStyle(color: _getFontColor()),),
+                child: Text(MyLocalizations.of(context).okStr, style: TextStyle(color: _getFontColor())), // 好的
                 isDefaultAction: true,
                 onPressed: () => Navigator.pop(context),
               ),
             ],
+            contentPadding: EdgeInsets.fromLTRB(12, 16, 12, 12),
           ),
     );
   }
@@ -184,38 +187,38 @@ class _HomePageState extends State<HomePage> {
       isFavorite = true; // 当isFavorite为true显示“取消喜欢”
     else
       isFavorite = false; // 当isFavorite为false显示“标记喜欢”
-    showCupertinoDialog(
+    showDialog(
       context: context,
       builder: (context) {
         // 当用户没有任何喜欢颜色时隐藏“我喜欢的”入口
         if (allFavorite.length == 0) {
-          return CupertinoAlertDialog(
-            actions: <Widget>[
+          return SimpleDialog(
+            children: <Widget>[
               isFavorite
                   ? CupertinoDialogAction(
                       child: Text(
-                        '😪取消喜欢',
+                        MyLocalizations.of(context).cancelFavoriteStr, // 取消喜欢
                         style: TextStyle(color: Colors.black),
                       ),
                       onPressed: _cancelFavorite,
                     )
                   : CupertinoDialogAction(
                       child: Text(
-                        '🌟标记喜欢',
+                        MyLocalizations.of(context).markFavoriteStr, // 标记喜欢
                         style: TextStyle(color: Colors.black),
                       ),
                       onPressed: _markAsFavorite,
                     ),
               CupertinoDialogAction(
-                child: Text('📲生成图片', style: TextStyle(color: Colors.black)),
+                child: Text(MyLocalizations.of(context).generatePicStr, style: TextStyle(color: Colors.black)), // 生成图片
                 onPressed: _goToImagePage,
               ),
               CupertinoDialogAction(
-                child: Text('❓使用提示', style: TextStyle(color: Colors.black)),
+                child: Text(MyLocalizations.of(context).getUseTipsStr, style: TextStyle(color: Colors.black)), // 使用提示
                 onPressed: _getHelp,
               ),
               CupertinoDialogAction(
-                child: Text('返回', style: TextStyle(color: _getFontColor())),
+                child: Text(MyLocalizations.of(context).backStr, style: TextStyle(color: _getFontColor())), // 返回
                 isDefaultAction: true,
                 onPressed: () {
                   Navigator.pop(context);
@@ -224,37 +227,37 @@ class _HomePageState extends State<HomePage> {
             ],
           );
         } else {
-          return CupertinoAlertDialog(
-            actions: <Widget>[
+          return SimpleDialog(
+            children: <Widget>[
               isFavorite
                   ? CupertinoDialogAction(
                       child: Text(
-                        '😪取消喜欢',
+                        MyLocalizations.of(context).cancelFavoriteStr, // 取消喜欢
                         style: TextStyle(color: Colors.black),
                       ),
                       onPressed: _cancelFavorite,
                     )
                   : CupertinoDialogAction(
                       child: Text(
-                        '🌟标记喜欢',
+                        MyLocalizations.of(context).markFavoriteStr, // 标记喜欢
                         style: TextStyle(color: Colors.black),
                       ),
                       onPressed: _markAsFavorite,
                     ),
               CupertinoDialogAction(
-                child: Text('🌠我喜欢的', style: TextStyle(color: Colors.black)),
+                child: Text(MyLocalizations.of(context).myFavoriteStr, style: TextStyle(color: Colors.black)), // 我喜欢的
                 onPressed: _getMyFavorite,
               ),
               CupertinoDialogAction(
-                child: Text('📲生成图片', style: TextStyle(color: Colors.black)),
+                child: Text(MyLocalizations.of(context).generatePicStr, style: TextStyle(color: Colors.black)), // 生成图片
                 onPressed: _goToImagePage,
               ),
               CupertinoDialogAction(
-                child: Text('❓使用提示', style: TextStyle(color: Colors.black)),
+                child: Text(MyLocalizations.of(context).getUseTipsStr, style: TextStyle(color: Colors.black)), // 使用提示
                 onPressed: _getHelp,
               ),
               CupertinoDialogAction(
-                child: Text('返回', style: TextStyle(color: _getFontColor())),
+                child: Text(MyLocalizations.of(context).backStr, style: TextStyle(color: _getFontColor())), // 返回
                 isDefaultAction: true,
                 onPressed: () {
                   Navigator.pop(context);
@@ -280,24 +283,32 @@ class _HomePageState extends State<HomePage> {
     // 震动检测
     shakeSubscription = accelerometerEvents.listen((AccelerometerEvent event) {
       // 如果检测到摇一摇 且存在上一个颜色
-      if (((event.x > 20) || (event.y > 20) || (event.z > 20)) && !_isShake && (prevColor != null)) {
+      if (((event.x > 20) || (event.y > 20) || (event.z > 20)) &&
+          !_isShake &&
+          (prevColor != null)) {
         setState(() => _isShake = true);
         showCupertinoDialog(
           context: context,
           builder: (context) => CupertinoAlertDialog(
-            title: Text('撤销操作'),
-            actions: <Widget>[
-              CupertinoDialogAction(
-                child: Text('上一个颜色', style: TextStyle(color: _getFontColor()),),
-                onPressed: _goToPrevColor,
+                title: Text('撤销操作'),
+                actions: <Widget>[
+                  CupertinoDialogAction(
+                    child: Text(
+                      '上一个颜色',
+                      style: TextStyle(color: _getFontColor()),
+                    ),
+                    onPressed: _goToPrevColor,
+                  ),
+                  CupertinoDialogAction(
+                    child: Text(
+                      '取消',
+                      style: TextStyle(color: _getFontColor()),
+                    ),
+                    onPressed: () => Navigator.pop(context),
+                    isDefaultAction: true,
+                  ),
+                ],
               ),
-              CupertinoDialogAction(
-                child: Text('取消', style: TextStyle(color: _getFontColor()),),
-                onPressed: () => Navigator.pop(context),
-                isDefaultAction: true,
-              ),
-            ],
-          ),
         );
         // 这里设置等待4秒是为了给shake加一个延迟
         Future.delayed(const Duration(seconds: 4), () {
@@ -384,7 +395,7 @@ class _HomePageState extends State<HomePage> {
                   GestureDetector(
                     onLongPress: _handleLongPressHex,
                     child: Tooltip(
-                      message: '已复制',
+                      message: MyLocalizations.of(context).copyStr, // 已复制
                       child: Container(
                         padding:
                             EdgeInsets.symmetric(vertical: 10, horizontal: 10),
