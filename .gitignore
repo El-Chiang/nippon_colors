@@ -70,6 +70,6 @@ build/
 !**/ios/**/default.perspectivev3
 !/packages/flutter_tools/test/data/dart_dependencies_test/**/.packages
 
-# 签名
-key.properties
+# Keystore
 key.jks
+key.properties

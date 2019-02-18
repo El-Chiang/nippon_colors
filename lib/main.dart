@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'pages/home_page.dart';
 import 'models/nippon_color.dart';
+import 'models/localizations.dart';
 import 'actions/event_actions.dart';
 
 void main() async {
@@ -23,6 +25,15 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Nihon',
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        MyLocalDelegate.delegate, // 我的国际化
+      ],
+      supportedLocales: [
+        const Locale('en', 'US'), // English
+        const Locale('zh', 'CH'), // Chinese
+      ],
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => HomePage(myFavorite: myFavorite),

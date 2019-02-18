@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
@@ -6,6 +7,7 @@ import 'package:image_picker_saver/image_picker_saver.dart';
 import 'package:esys_flutter_share/esys_flutter_share.dart';
 
 import '../models/nippon_color.dart';
+import '../models/localizations.dart';
 import '../utils/utils.dart';
 import '../widgets/color_name.dart';
 import '../widgets/color_chart.dart';
@@ -17,24 +19,36 @@ class _ImageSelector extends StatelessWidget {
 
   const _ImageSelector({this.images, this.nipponColor});
 
+  Color _getFontColor() {
+    List<int> oldRGB = nipponColor.getRGB();
+    if (nipponColor.isLight()) {
+      List<int> newRGB = oldRGB.map((data) => (data * 0.6).round()).toList(); // 将RGB等比例减小
+      Color color = Color.fromARGB(255, newRGB[0], newRGB[1], newRGB[2]);
+      return color;
+    } else {
+      return nipponColor.color;
+    }
+  }
+
   /// 点击帮助按钮
   void _onTapHelp(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-            title: Text(
-              '使用提示',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.bold),
+      builder: (context) => SimpleDialog(
+          title: Text(MyLocalizations.of(context).tipsTitleStr, textAlign: TextAlign.center), // 使用提示
+          // 首页点击颜色名称，显示所有颜色
+          // 手误误点屏幕时，“摇一摇设备”撤销操作
+          // 长按十六进制值可复制
+          children: <Widget>[
+            Text('· ${MyLocalizations.of(context).tipStr1}\n· ${MyLocalizations.of(context).tipStr2}\n· ${MyLocalizations.of(context).tipStr3}'),
+            CupertinoDialogAction(
+              child: Text(MyLocalizations.of(context).okStr, style: TextStyle(color: _getFontColor())), // 好的
+              isDefaultAction: true,
+              onPressed: () => Navigator.pop(context),
             ),
-            content: Text('· 首页点击颜色名称，显示所有颜色\n· 手误误点屏幕时，“摇一摇设备”撤销操作'),
-            actions: <Widget>[
-              FlatButton(
-                child: Text('好的', style: TextStyle(color: nipponColor.color)),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
+          ],
+          contentPadding: EdgeInsets.fromLTRB(12, 16, 12, 12),
+        ),
     );
   }
 
@@ -45,7 +59,7 @@ class _ImageSelector extends StatelessWidget {
     Scaffold.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          '图片已保存到相册',
+          MyLocalizations.of(context).savedInfoStr, // 图片已保存到相册
           style: TextStyle(color: createColorStyle(nipponColor.isLight())),
         ),
         backgroundColor: nipponColor.color,
@@ -54,11 +68,11 @@ class _ImageSelector extends StatelessWidget {
   }
 
   /// 点击分享按钮
-  void _onTapShare(int index) async {
+  void _onTapShare(BuildContext context, int index) async {
     final Uint8List imgBytes = await images[index].toImage(); // 生成相应图片
     final ByteBuffer buffer = imgBytes.buffer;
     final ByteData bytes = ByteData.view(buffer); // 转换成Bytes
-    await EsysFlutterShare.shareImage('${nipponColor.name}.png', bytes, '分享图片');
+    await EsysFlutterShare.shareImage('${nipponColor.name}.png', bytes, MyLocalizations.of(context).shareStr);
   }
 
   @override
@@ -138,7 +152,7 @@ class _ImageSelector extends StatelessWidget {
                   // 分享
                   GestureDetector(
                     child: Icon(Icons.share, color: nipponColor.color),
-                    onTap: () => _onTapShare(controller.index),
+                    onTap: () => _onTapShare(context, controller.index),
                   ),
                   SizedBox(width: 6),
                 ],
