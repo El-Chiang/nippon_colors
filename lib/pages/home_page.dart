@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   bool _isBranchVisibled; // 树枝是否可见
   bool _isShake; // 是否摇动设备
   StreamSubscription shakeSubscription;
+  final GlobalKey<ColorNameState> colorNameStateKey = GlobalKey<ColorNameState>(); // ColorName Key
 
   /// 初始化状态并绑定监听事件
   void initState() {
@@ -90,6 +91,7 @@ class _HomePageState extends State<HomePage> {
     final int newIndex = Random().nextInt(colorCount - 1);
     final newColor = NipponColor.fromMap(colors[newIndex]);
     setState(() => prevColor = nipponColor); // 将当前颜色保存到prevColor
+    colorNameStateKey.currentState.updateOpacity(); // 更新ColorName透明度
     eventBus.fire(UpdateColorEvent(newIndex, newColor));
   }
 
@@ -356,7 +358,7 @@ class _HomePageState extends State<HomePage> {
               top: screenSize.height * 0.15, // 颜色名称离屏幕上边框的距离
               right: screenSize.width * 0.05, // 颜色名称离屏幕右边框的距离
               child: GestureDetector(
-                child: ColorNameContainer(color: nipponColor), // 颜色名称
+                child: ColorNameContainer(color: nipponColor, key: colorNameStateKey, showAnimation: true), // 颜色名称
                 onTap: _handleTapName,
               ),
             ),

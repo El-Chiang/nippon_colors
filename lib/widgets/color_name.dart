@@ -4,30 +4,64 @@ import '../utils/utils.dart';
 
 class ColorNameContainer extends StatefulWidget {
   final NipponColor color;
-  final double ratio;
+  final double ratio; // 比例
+  final bool showAnimation; // 是否显示动画
 
-  ColorNameContainer({Key key, @required this.color, ratio})
+  ColorNameContainer({Key key, @required this.color, ratio, @required this.showAnimation})
       : ratio = ratio ?? 1,
         super(key: key);
 
   @override
-  State<StatefulWidget> createState() => _ColorNameState();
+  State<StatefulWidget> createState() => ColorNameState();
 }
 
-class _ColorNameState extends State<ColorNameContainer> {
+class ColorNameState extends State<ColorNameContainer> with SingleTickerProviderStateMixin {
   String name;
   String cname;
   NipponColor nipponColor;
+
+  AnimationController _nameController;
+  Animation<double> _nameAnimation;
+
+  @override
+  void initState() {
+    super.initState(); // super.initState()必须放在最开头才会显示动画
+    if (widget.showAnimation) {
+      _nameController =AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    );
+    _nameAnimation = Tween<double>(begin: 0, end: 1)
+      .animate(_nameController)
+      ..addListener(() {
+        setState((){});
+      });
+    _nameController.forward();
+    }
+  }
+
+  @override
+  dispose() {
+    if (widget.showAnimation) _nameController.dispose();
+    super.dispose();
+  }
+
+  void updateOpacity() {
+    _nameController.reset();
+    _nameController.forward();
+  }
 
   @override
   Widget build(BuildContext context) {
     nipponColor = widget.color;
     name = nipponColor.name;
     cname = nipponColor.cname;
-    final double ratio = widget.ratio;
-
+    final double ratio = widget.ratio; 
     final textStyle = TextStyle(color: createColorStyle(nipponColor.isLight()));
-    return Column(
+    
+    return Opacity(
+      opacity: widget.showAnimation ? _nameAnimation.value : 1,
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -42,7 +76,8 @@ class _ColorNameState extends State<ColorNameContainer> {
               fontSize: 18 * ratio,
               fontWeight: FontWeight.w200,
             )),
-      ],
+        ],
+      ),
     );
   }
 }

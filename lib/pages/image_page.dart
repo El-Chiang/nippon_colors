@@ -283,7 +283,7 @@ class GenerateImage extends StatelessWidget {
                 children: <Widget>[
                   showName
                       ? ColorNameContainer(
-                          color: nipponColor, ratio: scaleRatio)
+                          color: nipponColor, ratio: scaleRatio, showAnimation: false)
                       : SizedBox(), // 颜色名称
                 ],
               ),

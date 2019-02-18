@@ -23,7 +23,7 @@ class ColorItem extends StatelessWidget {
     return GestureDetector(
       onTap: handleTapItem,
       child: Container(
-        child: ColorNameContainer(color: nipponColor),
+        child: ColorNameContainer(color: nipponColor, showAnimation: false),
         padding: EdgeInsets.only(right: screenSize.width * 0.05),
         color: nipponColor.color,
       ),

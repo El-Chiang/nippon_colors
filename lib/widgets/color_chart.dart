@@ -119,6 +119,7 @@ class _ValueChartState extends State<ValueChart> {
           chartType: CircularChartType.Radial,
           edgeStyle: SegmentEdgeStyle.round,
           percentageValues: true,
+          duration: Duration(milliseconds: 500),
         ),
         SizedBox(width: widget.chartSize.width * 0.1),
         Text(
