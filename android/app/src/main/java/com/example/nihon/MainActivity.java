@@ -1,4 +1,4 @@
-package com.dev.nihon;
+package com.app.nihon;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;
